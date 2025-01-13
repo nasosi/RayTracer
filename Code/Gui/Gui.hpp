@@ -14,7 +14,7 @@ namespace RayTracer
             double       cameraFocalLength    = 1.0;
             double       cameraViewportHeight = 2.0;
             SizeType     maxBounces           = 10;
-            SizeType     samplesPerPixel      = 500;
+            SizeType     samplesPerPixel      = 1;
 
             HittableList world;
 
@@ -49,7 +49,7 @@ namespace RayTracer
 
             virtual void HandleLeftMouseButtonUnclickEvent( float x, float y );
             virtual void HandleRightMouseButtonUnclickEvent( float x, float y );
-            virtual void HandleBothMouseButtonsUnclickEvent( float x, float y );
+            virtual void HandleBothMouseButtonsUnclickedEvent( float x, float y );
     };
 
 

@@ -162,7 +162,7 @@ namespace RayTracer
 
                     if ( ( flags & SDL_BUTTON_MASK( 1 ) ) == 0 && ( flags & SDL_BUTTON_MASK( 2 ) ) == 0 )
                     {
-                        application->HandleBothMouseButtonsUnclickEvent( x, y );
+                        application->HandleBothMouseButtonsUnclickedEvent( x, y );
                     }
 
                     if ( ( flags & SDL_BUTTON_MASK( 1 ) ) == 0 )
@@ -233,9 +233,6 @@ namespace RayTracer
 
     bool Application::Iterate( const double& timeSec, ImageView<Rgba8>& renderBuffer )
     {
-        SizeType maxBounces      = 10;
-        SizeType samplesPerPixel = 1;
-
         if ( rotate )
         {
             auto   mousePos = GetMousePosition( );
@@ -358,7 +355,7 @@ namespace RayTracer
     {
     }
 
-    void Application::HandleBothMouseButtonsUnclickEvent( float x, float y )
+    void Application::HandleBothMouseButtonsUnclickedEvent( float x, float y )
     {
         rotate = false;
     }
