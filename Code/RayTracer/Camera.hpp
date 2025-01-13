@@ -27,7 +27,7 @@ namespace RayTracer
             Vec3D   pixelDeltaU;
             Vec3D   pixelDeltaV;
 
-            void    CalculateViewportParameters( double viewportWidth, double viewportHeight );
+            void    CalculateViewportParameters( double windowWidth, double windowHeight );
 
         public:
 

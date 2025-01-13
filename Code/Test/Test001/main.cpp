@@ -8,7 +8,7 @@ int main( )
 
     using namespace RayTracer;
 
-    RgbImage8     image( 300, 200 );
+    RgbImage8    image( 300, 200 );
     const double xStep = 1.0 / image.GetWidth( );
     const double yStep = 1.0 / image.GetHeight( );
     double       y     = 0;

@@ -2,6 +2,7 @@
 
 namespace RayTracer
 {
+
     template class Interval<float>;
     template class Interval<double>;
 

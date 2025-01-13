@@ -87,6 +87,7 @@ namespace RayTracer
         {
             RayD scatteredRay;
             RgbD attenuation;
+
             if ( hitRecord.material->Scatter( ray, hitRecord, attenuation, scatteredRay ) )
             {
                 return attenuation * RayColor( scatteredRay, maxBounces - 1, world );
@@ -94,8 +95,8 @@ namespace RayTracer
             return RgbD( 0, 0, 0 );
         }
 
-        Vec3D unitDirection = ray.GetDirection( ).GetNormalized( );
-        auto  a             = 0.5 * ( unitDirection.y( ) + 1.0 );
+        auto a = 0.5 * ( ray.GetDirection( ).GetNormalized( ).y( ) + 1.0 );
+
         return ( 1.0 - a ) * RgbD( 1.0, 1.0, 1.0 ) + a * RgbD( 0.5, 0.7, 1.0 );
     }
 
@@ -106,24 +107,22 @@ namespace RayTracer
 
     void Camera::Rotate( Vec2<double> rotationAnglesDeg )
     {
-        lookAt              = RotateAround( center, lookAt, Vec3D { 0.0, 1.0, 0.0 }, rotationAnglesDeg.x( ) );
+        lookAt      = RotateAround( center, lookAt, Vec3D { 0.0, 1.0, 0.0 }, rotationAnglesDeg.x( ) );
 
-        Vec3D forwardVector = ( center - lookAt ).GetNormalized( );
-        Vec3D rightVector   = Cross( upVector, forwardVector ).GetNormalized( );
-        lookAt              = RotateAround( center, lookAt, rightVector, rotationAnglesDeg.y( ) );
+        Vec3D fwd   = ( center - lookAt ).GetNormalized( );
+        Vec3D right = Cross( upVector, fwd ).GetNormalized( );
+        lookAt      = RotateAround( center, lookAt, right, rotationAnglesDeg.y( ) );
     }
 
     void Camera::Pan( Vec2<double> panVector )
     {
-        Vec3D w = ( center - lookAt ).GetNormalized( );
+        Vec3D fwd   = ( center - lookAt ).GetNormalized( );
+        center      = center + fwd * panVector.y( );
+        lookAt      = lookAt + fwd * panVector.y( );
 
-        center  = center + w * panVector.y( );
-        lookAt  = lookAt + w * panVector.y( );
-
-        Vec3D u = Cross( upVector, w ).GetNormalized( );
-
-        center  = center + u * panVector.x( );
-        lookAt  = lookAt + u * panVector.x( );
+        Vec3D right = Cross( upVector, fwd ).GetNormalized( );
+        center      = center + right * panVector.x( );
+        lookAt      = lookAt + right * panVector.x( );
     }
 
 } // namespace RayTracer

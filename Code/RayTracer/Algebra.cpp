@@ -26,5 +26,4 @@ namespace RayTracer
     template float Dot( const Vec3F& u, const Vec3F& v );
     template Vec3F Cross( const Vec3F& u, const Vec3F& v );
 
-
 } // namespace RayTracer
