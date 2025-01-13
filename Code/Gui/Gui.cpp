@@ -12,7 +12,7 @@
 namespace RayTracer
 {
 
-    HittableList CreateWorld( )
+    HittableList CreateDemoWorld( )
     {
         auto groundMaterial       = std::make_shared<Lambertian>( RgbD( 0.8, 0.8, 0.0 ) );
         auto centerSphereMaterial = std::make_shared<Lambertian>( RgbD( 0.1, 0.2, 0.5 ) );
@@ -201,6 +201,7 @@ namespace RayTracer
 
     Application::Application( ) : camera( 1.0, 68.0 )
     {
+        world = CreateDemoWorld( );
     }
 
     void Application::InitGui( int& windowWidth, int& windowHeight )
@@ -232,10 +233,8 @@ namespace RayTracer
 
     bool Application::Iterate( const double& timeSec, ImageView<Rgba8>& renderBuffer )
     {
-        SizeType     maxBounces      = 10;
-        SizeType     samplesPerPixel = 1;
-
-        HittableList world           = CreateWorld( );
+        SizeType maxBounces      = 10;
+        SizeType samplesPerPixel = 1;
 
         if ( rotate )
         {
@@ -278,6 +277,7 @@ namespace RayTracer
     {
         float x, y;
         SDL_GetMouseState( &x, &y );
+
         return Point2F { x, y };
     }
 
