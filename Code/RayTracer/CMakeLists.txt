@@ -3,6 +3,7 @@ find_package(OpenMP REQUIRED)
 
 set( RtHeaderFiles 
 	Algebra.hpp
+	Array.hpp
 	Camera.hpp
 	Color.hpp
 	Common.hpp
@@ -15,6 +16,7 @@ set( RtHeaderFiles
 
 set( RtSourceFiles 
 	Algebra.cpp
+	Array.cpp
 	Camera.cpp
 	Common.cpp
 	Hittable.cpp

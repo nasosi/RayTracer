@@ -22,12 +22,12 @@ namespace RayTracer
 
         //
         HittableList world;
-        world.objects.push_back( std::make_shared<Sphere>( Point3D( 0.0, -100.5, -1.0 ), 100.0, groundMaterial ) );
-        world.objects.push_back( std::make_shared<Sphere>( Point3D( 0.0, 0, -1.2 ), 0.5, centerSphereMaterial ) );
-        world.objects.push_back( std::make_shared<Sphere>( Point3D( 0.0, 0, -4.5 ), 0.3, otherSphereMaterial ) );
+        world.objects.push_back( std::make_shared<Sphere>( Point3D { 0.0, -100.5, -1.0 }, 100.0, groundMaterial ) );
+        world.objects.push_back( std::make_shared<Sphere>( Point3D { 0.0, 0, -1.2 }, 0.5, centerSphereMaterial ) );
+        world.objects.push_back( std::make_shared<Sphere>( Point3D { 0.0, 0, -4.5 }, 0.3, otherSphereMaterial ) );
 
-        world.objects.push_back( std::make_shared<Sphere>( Point3D( -1.0, 0.0, -1.0 ), 0.5, leftSphereMaterial ) );
-        world.objects.push_back( std::make_shared<Sphere>( Point3D( 1.0, 0.0, -1.0 ), 0.5, rightSphereMaterial ) );
+        world.objects.push_back( std::make_shared<Sphere>( Point3D { -1.0, 0.0, -1.0 }, 0.5, leftSphereMaterial ) );
+        world.objects.push_back( std::make_shared<Sphere>( Point3D { 1.0, 0.0, -1.0 }, 0.5, rightSphereMaterial ) );
 
         return world;
     }
@@ -233,6 +233,25 @@ namespace RayTracer
 
     bool Application::Iterate( const double& timeSec, ImageView<Rgba8>& renderBuffer )
     {
+        static double   prevFrameTimeSec  = 0;
+        static double   prevReportTimeSec = 0;
+        static SizeType reportFrameCount  = 0;
+
+
+        double          deltaTimeSec      = timeSec - prevFrameTimeSec;
+        double          reportDurationSec = timeSec - prevReportTimeSec;
+
+        if ( reportDurationSec >= 1.0 )
+        {
+            std::cout << "Fps: " << double( reportFrameCount ) / reportDurationSec << std::endl;
+            reportFrameCount  = 0;
+            prevReportTimeSec = timeSec;
+        }
+        else
+        {
+            reportFrameCount++;
+        }
+
         if ( rotate )
         {
             auto   mousePos = GetMousePosition( );
@@ -240,32 +259,35 @@ namespace RayTracer
             double deltaX   = mousePos.x( ) - rotateStart.x( );
             double deltaY   = mousePos.y( ) - rotateStart.y( );
 
-            camera.Rotate( Vec2<double> { -deltaX / 5.0, -deltaY / 5.0 } );
+            camera.Rotate( Vec2<double> { -5.0 * deltaX * deltaTimeSec, -5.0 * deltaY * deltaTimeSec } );
 
             rotateStart = mousePos;
         }
 
+
         if ( moveBack )
         {
-            camera.Pan( Vec2<double> { 0, 0.1 } );
+            camera.Pan( Vec2<double> { 0, 10.0 * deltaTimeSec } );
         }
 
         if ( moveForward )
         {
-            camera.Pan( Vec2<double> { 0, -0.1 } );
+            camera.Pan( Vec2<double> { 0, -10.0 * deltaTimeSec } );
         }
 
         if ( moveLeft )
         {
-            camera.Pan( Vec2<double> { -0.1, 0.0 } );
+            camera.Pan( Vec2<double> { -10.0 * deltaTimeSec, 0.0 } );
         }
 
         if ( moveRight )
         {
-            camera.Pan( Vec2<double> { 0.1, 0.0 } );
+            camera.Pan( Vec2<double> { 10.0 * deltaTimeSec, 0.0 } );
         }
 
         camera.Render( world, renderBuffer, maxBounces, samplesPerPixel );
+
+        prevFrameTimeSec = timeSec;
 
         return true;
     }

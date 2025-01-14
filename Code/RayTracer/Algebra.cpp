@@ -26,4 +26,16 @@ namespace RayTracer
     template float Dot( const Vec3F& u, const Vec3F& v );
     template Vec3F Cross( const Vec3F& u, const Vec3F& v );
 
+    namespace V
+    {
+        RAYTRACER_VECTOR_TYPE_INSTANTIATE( float, 2 )
+        RAYTRACER_VECTOR_TYPE_INSTANTIATE( float, 3 )
+        RAYTRACER_VECTOR_TYPE_INSTANTIATE( double, 2 )
+        RAYTRACER_VECTOR_TYPE_INSTANTIATE( double, 3 )
+
+        RAYTRACER_POINT_TYPE_INSTANTIATE( float, 2 )
+        RAYTRACER_POINT_TYPE_INSTANTIATE( float, 3 )
+        RAYTRACER_POINT_TYPE_INSTANTIATE( double, 2 )
+        RAYTRACER_POINT_TYPE_INSTANTIATE( double, 3 )
+    } // namespace V
 } // namespace RayTracer

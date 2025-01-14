@@ -15,10 +15,10 @@ HittableList CreateWorld( )
 
     //
     HittableList world;
-    world.objects.push_back( std::make_shared<Sphere>( Point3D( 0.0, -100.5, -1.0 ), 100.0, groundMaterial ) );
-    world.objects.push_back( std::make_shared<Sphere>( Point3D( 0.0, 0, -1.2 ), 0.5, centerSphereMaterial ) );
-    world.objects.push_back( std::make_shared<Sphere>( Point3D( -1.0, 0.0, -1.0 ), 0.5, leftSphereMaterial ) );
-    world.objects.push_back( std::make_shared<Sphere>( Point3D( 1.0, 0.0, -1.0 ), 0.5, rightSphereMaterial ) );
+    world.objects.push_back( std::make_shared<Sphere>( Point3D{ 0.0, -100.5, -1.0 }, 100.0, groundMaterial ) );
+    world.objects.push_back( std::make_shared<Sphere>( Point3D{ 0.0, 0, -1.2 }, 0.5, centerSphereMaterial ) );
+    world.objects.push_back( std::make_shared<Sphere>( Point3D { -1.0, 0.0, -1.0 }, 0.5, leftSphereMaterial ) );
+    world.objects.push_back( std::make_shared<Sphere>( Point3D{ 1.0, 0.0, -1.0 }, 0.5, rightSphereMaterial ) );
 
     return world;
 }
