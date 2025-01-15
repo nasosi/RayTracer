@@ -11,10 +11,8 @@ namespace RayTracer
 
     class Application
     {
-            double       cameraFocalLength    = 1.0;
-            double       cameraViewportHeight = 2.0;
-            SizeType     maxBounces           = 10;
-            SizeType     samplesPerPixel      = 1;
+            SizeType     maxBounces      = 10;
+            SizeType     samplesPerPixel = 1;
 
             HittableList world;
 
@@ -23,10 +21,14 @@ namespace RayTracer
             bool         rotate = false;
             Point2F      rotateStart;
 
-            bool         moveBack    = false;
-            bool         moveForward = false;
-            bool         moveLeft    = false;
-            bool         moveRight   = false;
+            bool         moveBack                 = false;
+            bool         moveForward              = false;
+            bool         moveLeft                 = false;
+            bool         moveRight                = false;
+
+            double       minMoveVelocityPerSec    = 0.5;
+            double       moveVelocityPerSec       = minMoveVelocityPerSec;
+            double       moveAccelerationPerSecSq = 4.0;
 
 
         public:

@@ -46,9 +46,9 @@ namespace RayTracer
 
             void SetLookAt( const Point3D& p );
 
-            void Rotate( Vec2<double> rotationAnglesDeg );
+            void Rotate( Vec<double,2> rotationAnglesDeg );
 
-            void Pan( Vec2<double> panVector );
+            void Pan( Vec<double,2> panVector );
     };
 
 

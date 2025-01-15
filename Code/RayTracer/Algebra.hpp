@@ -2,368 +2,345 @@
 
 #include "Array.hpp"
 #include "Common.hpp"
-
+#include "ConstexprFor.hpp"
 #include <cmath>
-#include <utility>
+
 
 namespace RayTracer
 {
 
-    namespace V
+
+    template <typename T, SizeType Dimension>
+    class CartesianArray : public Array<T, Dimension>
     {
-        template <typename T, SizeType Dimension>
-        class CartesianArray : public Array<T, Dimension>
-        {
-            private:
+        private:
 
-                using Parent = Array<T, Dimension>;
+            using Parent = Array<T, Dimension>;
 
 
-            public:
+        public:
 
-                T& x( )
-                {
-                    return Parent::data[ 0 ];
-                }
-
-                template <SizeType Dim = Dimension>
-                typename std::enable_if<( Dim > 1 ), const T&>::type y( ) const
-                {
-                    return Parent::data[ 1 ];
-                }
-
-                template <SizeType Dim = Dimension>
-                typename std::enable_if<( Dim > 1 ), T&>::type y( )
-                {
-                    return Parent::data[ 1 ];
-                }
-
-                template <SizeType Dim = Dimension>
-                typename std::enable_if<( Dim > 2 ), const T&>::type z( ) const
-                {
-                    return Parent::data[ 2 ];
-                }
-
-                template <SizeType Dim = Dimension>
-                typename std::enable_if<( Dim > 2 ), T&>::type z( )
-                {
-                    return Parent::data[ 2 ];
-                }
-
-                template <SizeType Dim = Dimension>
-                typename std::enable_if<( Dim > 3 ), const T&>::type w( ) const
-                {
-                    return Parent::data[ 3 ];
-                }
-
-                template <SizeType Dim = Dimension>
-                typename std::enable_if<( Dim > 3 ), T&>::type w( )
-                {
-                    return Parent::data[ 3 ];
-                }
-        };
-
-
-        template <typename T, SizeType Dimension>
-        class Vec;
-
-
-        template <typename T, SizeType Dimension>
-        class Point : public CartesianArray<T, Dimension>
-        {
-            public:
-
-                Point& operator+=( const Vec<T, Dimension>& vec )
-                {
-                    Add( vec );
-
-                    return *this;
-                }
-
-                Point& operator-=( const Vec<T, Dimension>& vec )
-                {
-                    Subtract( vec );
-
-                    return *this;
-                }
-
-            private:
-
-                using Base = CartesianArray<T, Dimension>;
-
-
-                template <SizeType i = 0>
-                void Add( const Vec<T, Dimension>& other )
-                {
-                    Base::data[ i ] += other[ i ];
-
-                    if constexpr ( i == Dimension - 1 )
-                    {
-                        return;
-                    }
-                    else
-                    {
-                        Add<i + 1>( other );
-                    }
-                }
-
-                template <SizeType i = 0>
-                void Subtract( const Vec<T, Dimension>& other )
-                {
-                    Base::data[ i ] -= other[ i ];
-
-                    if constexpr ( i == Dimension - 1 )
-                    {
-                        return;
-                    }
-                    else
-                    {
-                        Add<i + 1>( other );
-                    }
-                }
-        };
-
-        template <typename T, SizeType Dimension>
-        class Vec : public CartesianArray<T, Dimension>
-        {
-            public:
-
-                Vec& operator+=( const Vec& other )
-                {
-                    Add( other );
-
-                    return *this;
-                }
-
-                Vec& operator-=( const Vec& other )
-                {
-                    Subtract( other );
-
-                    return *this;
-                }
-
-                Vec& operator*=( const T& s )
-                {
-                    Multiply( s );
-
-                    return *this;
-                }
-
-                Vec& operator/=( const T& s )
-                {
-                    Divide( s );
-
-                    return *this;
-                }
-
-                T MagSquare( ) const
-                {
-                    T m = 0;
-
-                    CalcMagSquare( m );
-
-                    return m;
-                }
-
-                T Magnitude( ) const
-                {
-                    return std::sqrt( MagSquare( ) );
-                }
-
-            private:
-
-                using Base = CartesianArray<T, Dimension>;
-
-                template <SizeType i = 0>
-                void Multiply( const T& s )
-                {
-                    Base::data[ i ] *= s;
-
-                    if constexpr ( i == Dimension - 1 )
-                    {
-                        return;
-                    }
-                    else
-                    {
-                        Multiply<i + 1>( s );
-                    }
-                }
-
-                template <SizeType i = 0>
-                void Divide( const T& s )
-                {
-                    Base::data[ i ] /= s;
-
-                    if constexpr ( i == Dimension - 1 )
-                    {
-                        return;
-                    }
-                    else
-                    {
-                        Divide<i + 1>( s );
-                    }
-                }
-
-                template <SizeType i = 0>
-                void Add( const Vec& other )
-                {
-                    Base::data[ i ] += other[ i ];
-
-                    if constexpr ( i == Dimension - 1 )
-                    {
-                        return;
-                    }
-                    else
-                    {
-                        Add<i + 1>( other );
-                    }
-                }
-
-                template <SizeType i = 0>
-                void Subtract( const Vec& other )
-                {
-                    Base::data[ i ] -= other[ i ];
-
-                    if constexpr ( i == Dimension - 1 )
-                    {
-                        return;
-                    }
-                    else
-                    {
-                        Add<i + 1>( other );
-                    }
-                }
-
-                template <SizeType i = 0>
-                void CalcMagSquare( T& m ) const
-                {
-                    m += std::pow( Base::data[ i ], 2 );
-
-                    if constexpr ( i == Dimension - 1 )
-                    {
-                        return;
-                    }
-                    else
-                    {
-                        CalcMagSquare<i + 1>( m );
-                    }
-                }
-        };
-
-
-        template <typename T, SizeType Dimension>
-        inline Vec<T, Dimension> operator+( Vec<T, Dimension> a, const Vec<T, Dimension>& b )
-        {
-            a += b;
-
-            return a;
-        }
-
-        template <typename T, SizeType Dimension>
-        inline Vec<T, Dimension> operator-( Vec<T, Dimension> a, const Vec<T, Dimension>& b )
-        {
-            a -= b;
-
-            return a;
-        }
-
-        template <typename T, SizeType Dimension>
-        inline Vec<T, Dimension> operator*( Vec<T, Dimension> a, const T& s )
-        {
-            a *= s;
-
-            return a;
-        }
-
-        template <typename T, SizeType Dimension>
-        inline Vec<T, Dimension> operator*( const T& s, Vec<T, Dimension> a )
-        {
-            return a * s;
-        }
-
-        template <typename T, SizeType Dimension>
-        inline Vec<T, Dimension> operator/( Vec<T, Dimension> a, const T& s )
-        {
-            a /= s;
-
-            return a;
-        }
-
-        namespace Detail
-        {
-            template <typename T, SizeType Dimension, SizeType i = 0>
-            void VecNegate( const Vec<T, Dimension>& in, Vec<T, Dimension>& out )
+            const T& x( ) const
             {
-                out[ i ] = -in[ i ];
-
-                if constexpr ( i == Dimension - 1 )
-                {
-                    return;
-                }
-                else
-                {
-                    Detail::VecNegate<T, Dimension, i + 1>( in, out );
-                }
+                return Parent::data[ 0 ];
             }
 
-            template <typename T, SizeType Dimension, SizeType i = 0>
-            void PointSubtract( const Point<T, Dimension>& pa, const Point<T, Dimension>& pb, Vec<T, Dimension>& out )
+            T& x( )
             {
-                out[ i ] = pa[ i ] - pb[ i ];
-
-                if constexpr ( i == Dimension - 1 )
-                {
-                    return;
-                }
-                else
-                {
-                    PointSubtract<T, Dimension, i + 1>( pa, pb, out );
-                }
+                return Parent::data[ 0 ];
             }
-        } // namespace Detail
 
-        template <typename T, SizeType Dimension>
-        inline Vec<T, Dimension> operator-( const Vec<T, Dimension>& v )
+            template <SizeType Dim = Dimension>
+            typename std::enable_if<( Dim > 1 ), const T&>::type y( ) const
+            {
+                return Parent::data[ 1 ];
+            }
+
+            template <SizeType Dim = Dimension>
+            typename std::enable_if<( Dim > 1 ), T&>::type y( )
+            {
+                return Parent::data[ 1 ];
+            }
+
+            template <SizeType Dim = Dimension>
+            typename std::enable_if<( Dim > 2 ), const T&>::type z( ) const
+            {
+                return Parent::data[ 2 ];
+            }
+
+            template <SizeType Dim = Dimension>
+            typename std::enable_if<( Dim > 2 ), T&>::type z( )
+            {
+                return Parent::data[ 2 ];
+            }
+
+            template <SizeType Dim = Dimension>
+            typename std::enable_if<( Dim > 3 ), const T&>::type w( ) const
+            {
+                return Parent::data[ 3 ];
+            }
+
+            template <SizeType Dim = Dimension>
+            typename std::enable_if<( Dim > 3 ), T&>::type w( )
+            {
+                return Parent::data[ 3 ];
+            }
+    };
+
+
+    template <typename T, SizeType Dimension>
+    class Vec;
+
+
+    template <typename T, SizeType Dimension>
+    class Point : public CartesianArray<T, Dimension>
+    {
+        public:
+
+            inline Point& operator+=( const Vec<T, Dimension>& vec )
+            {
+                Constexpr_For<SizeType, 0, Dimension>(
+                    [ this, &vec ]( auto i )
+                    {
+                        ( *this )[ i ] += vec[ i ];
+                    } );
+
+                return *this;
+            }
+
+            inline Point& operator-=( const Vec<T, Dimension>& vec )
+            {
+                Constexpr_For<SizeType, 0, Dimension>(
+                    [ this, &vec ]( auto i )
+                    {
+                        ( *this )[ i ] -= vec[ i ];
+                    } );
+
+                return *this;
+            }
+    };
+
+
+    template <typename T, SizeType Dimension>
+    class Vec : public CartesianArray<T, Dimension>
+    {
+        public:
+
+            inline Vec& operator+=( const Vec& v )
+            {
+                Constexpr_For<SizeType, 0, Dimension>(
+                    [ this, &v ]( auto i )
+                    {
+                        ( *this )[ i ] += v[ i ];
+                    } );
+
+                return *this;
+            }
+
+            inline Vec& operator-=( const Vec& v )
+            {
+                Constexpr_For<SizeType, 0, Dimension>(
+                    [ this, &v ]( auto i )
+                    {
+                        ( *this )[ i ] -= v[ i ];
+                    } );
+
+                return *this;
+            }
+
+            inline Vec& operator*=( const T& s )
+            {
+                Constexpr_For<SizeType, 0, Dimension>(
+                    [ this, &s ]( auto i )
+                    {
+                        ( *this )[ i ] *= s;
+                    } );
+
+                return *this;
+            }
+
+            inline Vec& operator/=( const T& s )
+            {
+                *( this ) *= 1.0 / s;
+
+                return *this;
+            }
+
+            inline T MagSquare( ) const
+            {
+                T m = 0;
+
+                Constexpr_For<SizeType, 0, Dimension>(
+                    [ this, &m ]( auto i )
+                    {
+                        m += std::powf( ( *this )[ i ], 2 );
+                    } );
+
+                return m;
+            }
+
+            inline T Magnitude( ) const
+            {
+                return std::sqrt( MagSquare( ) );
+            }
+    };
+
+    template <typename T, SizeType Dimension>
+    inline Vec<T, Dimension> operator+( Vec<T, Dimension> a, const Vec<T, Dimension>& b )
+    {
+        a += b;
+
+        return a;
+    }
+
+    template <typename T, SizeType Dimension>
+    inline Vec<T, Dimension> operator-( Vec<T, Dimension> a, const Vec<T, Dimension>& b )
+    {
+        a -= b;
+
+        return a;
+    }
+
+    template <typename T, SizeType Dimension>
+    inline Vec<T, Dimension> operator*( Vec<T, Dimension> a, const T& s )
+    {
+        a *= s;
+
+        return a;
+    }
+
+    template <typename T, SizeType Dimension>
+    inline Vec<T, Dimension> operator*( const T& s, Vec<T, Dimension> a )
+    {
+        return a * s;
+    }
+
+    template <typename T, SizeType Dimension>
+    inline Vec<T, Dimension> operator/( Vec<T, Dimension> a, const T& s )
+    {
+        a /= s;
+
+        return a;
+    }
+
+    template <typename T, SizeType Dimension>
+    inline Vec<T, Dimension> operator-( Vec<T, Dimension> v )
+    {
+        Constexpr_For<SizeType, 0, Dimension>(
+            [ &v ]( auto i )
+            {
+                v[ i ] -= v[ i ];
+            } );
+
+
+        return v;
+    }
+
+    template <typename T, SizeType Dimension>
+    inline Vec<T, Dimension> operator-( const Point<T, Dimension>& a, const Point<T, Dimension>& b )
+    {
+        Vec<T, Dimension> vec;
+
+        Constexpr_For<SizeType, 0, Dimension>(
+            [ &vec, &a, &b ]( auto i )
+            {
+                vec[ i ] = a[ i ] - b[ i ];
+            } );
+
+        return vec;
+    }
+
+    template <typename T, SizeType Dimension>
+    inline Point<T, Dimension> operator+( Point<T, Dimension> p, const Vec<T, Dimension>& v )
+    {
+        p += v;
+
+        return p;
+    }
+
+    template <typename T, SizeType Dimension>
+    inline Point<T, Dimension> operator+( const Vec<T, Dimension>& v, Point<T, Dimension> p )
+    {
+        return p + v;
+    }
+
+    template <typename T, SizeType Dimension>
+    inline Point<T, Dimension> operator-( Point<T, Dimension> p, const Vec<T, Dimension>& v )
+    {
+        p -= v;
+
+        return p;
+    }
+
+
+    template <typename T, SizeType Dimension>
+    inline Vec<T, Dimension> Normalize( const Vec<T, Dimension>& v )
+    {
+        return v / v.Magnitude( );
+    }
+
+    template <typename T, SizeType Dimension>
+    inline T Dot( const Vec<T, Dimension>& u, const Vec<T, 3>& v )
+    {
+        T d = 0.0;
+
+        Constexpr_For<SizeType, 0, Dimension>(
+            [ &d, &u, &v ]( auto i )
+            {
+                d += u[ i ] * v[ i ];
+            } );
+
+        return d;
+    }
+
+
+    template <typename T>
+    inline Vec<T, 3> Cross( const Vec<T, 3>& u, const Vec<T, 3>& v )
+    {
+        return Vec<T, 3> { u[ 1 ] * v[ 2 ] - u[ 2 ] * v[ 1 ], u[ 2 ] * v[ 0 ] - u[ 0 ] * v[ 2 ], u[ 0 ] * v[ 1 ] - u[ 1 ] * v[ 0 ] };
+    }
+
+    template <typename T>
+    inline Vec<T, 3> Reflect( const Vec<T, 3>& vec, const Vec<T, 3>& normal )
+    {
+        return vec - 2.0 * Dot( vec, normal ) * normal;
+    }
+
+
+    template <typename T>
+    inline Vec<T, 3> Rotate( const Vec<T, 3>& vec, const Vec<T, 3>& normalizedRotationAxis, T angleDeg )
+    {
+        T cosTheta = std::cos( DegreesToRadians( angleDeg ) );
+        T sinTheta = std::sin( DegreesToRadians( angleDeg ) );
+
+        return vec * cosTheta + Cross( normalizedRotationAxis, vec ) * sinTheta + normalizedRotationAxis * Dot( normalizedRotationAxis, vec ) * ( 1.0 - cosTheta );
+    }
+
+    template <typename T>
+    inline Point<T, 3> RotateAround( Point<T, 3> rotationPoint, Point<T, 3> point, const Vec<T, 3>& normalizedRotationAxis, T angleDeg )
+    {
+        T         cosTheta    = std::cos( DegreesToRadians( angleDeg ) );
+        T         sinTheta    = std::sin( DegreesToRadians( angleDeg ) );
+
+        Vec<T, 3> vec         = point - rotationPoint;
+        vec                   = vec * cosTheta + Cross( normalizedRotationAxis, vec ) * sinTheta + normalizedRotationAxis * Dot( normalizedRotationAxis, vec ) * ( 1.0 - cosTheta );
+
+        return rotationPoint += vec;
+    }
+
+    template <class T>
+    Vec<T, 3> CreateRandomVector( )
+    {
+        return Vec<T, 3> { RandomReal<T>( ), RandomReal<T>( ), RandomReal<T>( ) };
+    }
+
+    template <typename T>
+    Vec<T, 3> CreateRandomVector( const T& min, const T& max )
+    {
+        return Vec<T, 3> { RandomReal<T>( min, max ), RandomReal<T>( min, max ), RandomReal<T>( min, max ) };
+    }
+
+    template <typename T>
+    Vec<T, 3> CreateRandomUnitVector( )
+    {
+        while ( true )
         {
-            Vec<T, Dimension> nv;
+            Vec<T, 3> p         = CreateRandomVector( -1.0, 1.0 );
+            T         magSquare = p.MagSquare( );
 
-            Detail::VecNegate( v, nv );
-
-            return nv;
+            if ( 1e-16 < magSquare && magSquare <= 1.0 )
+            {
+                return p / sqrt( magSquare );
+            }
         }
+    }
 
-        template <typename T, SizeType Dimension>
-        inline Vec<T, Dimension> operator-( const Point<T, Dimension>& a, const Point<T, Dimension>& b )
-        {
-            Vec<T, Dimension> vec;
-
-            Detail::PointSubtract( a, b, vec );
-
-            return vec;
-        }
-
-        template <typename T, SizeType Dimension>
-        inline Point<T, Dimension> operator+( Point<T, Dimension> p, const Vec<T, Dimension>& v )
-        {
-            p += v;
-
-            return p;
-        }
-
-        template <typename T, SizeType Dimension>
-        inline Point<T, Dimension> operator+( const Vec<T, Dimension>& v, Point<T, Dimension> p )
-        {
-            return p + v;
-        }
-
-        template <typename T, SizeType Dimension>
-        inline Point<T, Dimension> operator-( Point<T, Dimension> p, const Vec<T, Dimension>& v )
-        {
-            p -= v;
-
-            return p;
-        }
-
+    template <typename T>
+    inline bool NearZero( const Vec<T, 3>& v )
+    {
+        T s = std::numeric_limits<T>::epsilon( );
+        return ( std::fabs( v[ 0 ] ) < s ) && ( std::fabs( v[ 1 ] ) < s ) && ( std::fabs( v[ 2 ] ) < s );
+    }
 
 #define RAYTRACER_VECTOR_STRUCT_EXTERN( T, Dimension ) extern template class Vec<T, Dimension>;
 #define RAYTRACER_POINT_STRUCT_EXTERN( T, Dimension )  extern template class Point<T, Dimension>;
@@ -375,7 +352,7 @@ namespace RayTracer
     extern template Vec<T, Dimension> operator*( Vec<T, Dimension>, const T& );                 \
     extern template Vec<T, Dimension> operator*( const T&, Vec<T, Dimension> );                 \
     extern template Vec<T, Dimension> operator/( Vec<T, Dimension>, const T& );                 \
-    extern template Vec<T, Dimension> operator-( const Vec<T, Dimension>& );
+    extern template Vec<T, Dimension> operator-( Vec<T, Dimension> );
 
 #define RAYTRACER_POINT_OPERATIONS_EXTERN( T, Dimension )                                                        \
     extern template Vec<T, Dimension>   operator-( const Point<T, Dimension>& a, const Point<T, Dimension>& b ); \
@@ -394,7 +371,7 @@ namespace RayTracer
     template Vec<T, Dimension> operator*( Vec<T, Dimension>, const T& );                 \
     template Vec<T, Dimension> operator*( const T&, Vec<T, Dimension> );                 \
     template Vec<T, Dimension> operator/( Vec<T, Dimension>, const T& );                 \
-    template Vec<T, Dimension> operator-( const Vec<T, Dimension>& );
+    template Vec<T, Dimension> operator-( Vec<T, Dimension> );
 
 #define RAYTRACER_POINT_OPERATIONS_INSTANTIATE( T, Dimension )                                            \
     template Vec<T, Dimension>   operator-( const Point<T, Dimension>& a, const Point<T, Dimension>& b ); \
@@ -420,276 +397,31 @@ namespace RayTracer
     RAYTRACER_POINT_OPERATIONS_INSTANTIATE( T, Dimension )
 
 
-        RAYTRACER_VECTOR_TYPE_EXTERN( float, 2 )
-        RAYTRACER_VECTOR_TYPE_EXTERN( float, 3 )
-        RAYTRACER_VECTOR_TYPE_EXTERN( double, 2 )
-        RAYTRACER_VECTOR_TYPE_EXTERN( double, 3 )
+    RAYTRACER_VECTOR_TYPE_EXTERN( float, 2 )
+    RAYTRACER_VECTOR_TYPE_EXTERN( float, 3 )
+    RAYTRACER_VECTOR_TYPE_EXTERN( double, 2 )
+    RAYTRACER_VECTOR_TYPE_EXTERN( double, 3 )
 
-        RAYTRACER_POINT_TYPE_EXTERN( float, 2 )
-        RAYTRACER_POINT_TYPE_EXTERN( float, 3 )
-        RAYTRACER_POINT_TYPE_EXTERN( double, 2 )
-        RAYTRACER_POINT_TYPE_EXTERN( double, 3 )
-        // extern template Vec3D operator+( const Vec3D& u, const Vec3D& v );
+    RAYTRACER_POINT_TYPE_EXTERN( float, 2 )
+    RAYTRACER_POINT_TYPE_EXTERN( float, 3 )
+    RAYTRACER_POINT_TYPE_EXTERN( double, 2 )
+    RAYTRACER_POINT_TYPE_EXTERN( double, 3 )
+    // extern template Vec3D operator+( const Vec3D& u, const Vec3D& v );
 
+    using Point2F = Point<float, 2>;
 
-    } // namespace V
-
-    template <typename Type>
-    struct Vec2
-    {
-            Type e[ 2 ];
-
-            Vec2( ) : e { 0, 0 }
-            {
-            }
-
-            Vec2( Type x, Type y ) : e { x, y }
-            {
-            }
-
-            Type x( ) const
-            {
-                return e[ 0 ];
-            }
-            Type y( ) const
-            {
-                return e[ 1 ];
-            }
-    };
-
-    template <class T>
-    using Point2  = Vec2<T>;
-    using Point2F = Point2<float>;
+    using Vec3D   = Vec<double, 3>;
+    using Point3D = Point<double, 3>;
 
 
-    template <typename Type>
-    struct Vec3
-    {
-            Type e[ 3 ];
-
-            Vec3( ) : e { 0, 0, 0 }
-            {
-            }
-
-            Vec3( Type e0, Type e1, Type e2 ) : e { e0, e1, e2 }
-            {
-            }
-
-            Type x( ) const
-            {
-                return e[ 0 ];
-            }
-            Type y( ) const
-            {
-                return e[ 1 ];
-            }
-            Type z( ) const
-            {
-                return e[ 2 ];
-            }
-
-            Vec3 operator-( ) const
-            {
-                return Vec3( -e[ 0 ], -e[ 1 ], -e[ 2 ] );
-            }
-
-            const Type& operator[]( const SizeType& i ) const
-            {
-                return e[ i ];
-            }
-
-            Type& operator[]( const SizeType& i )
-            {
-                return e[ i ];
-            }
-
-            Vec3& operator+=( const Vec3& v )
-            {
-                e[ 0 ] += v.e[ 0 ];
-                e[ 1 ] += v.e[ 1 ];
-                e[ 2 ] += v.e[ 2 ];
-
-                return *this;
-            }
-
-            Vec3& operator-=( const Vec3& v )
-            {
-                e[ 0 ] -= v.e[ 0 ];
-                e[ 1 ] -= v.e[ 1 ];
-                e[ 2 ] -= v.e[ 2 ];
-
-                return *this;
-            }
-
-            Vec3& operator*=( Type t )
-            {
-                e[ 0 ] *= t;
-                e[ 1 ] *= t;
-                e[ 2 ] *= t;
-
-                return *this;
-            }
-
-            Vec3& operator/=( Type t )
-            {
-                e[ 0 ] /= t;
-                e[ 1 ] /= t;
-                e[ 2 ] /= t;
-
-                return *this;
-            }
-
-            Type GetLengthSquared( ) const
-            {
-                return e[ 0 ] * e[ 0 ] + e[ 1 ] * e[ 1 ] + e[ 2 ] * e[ 2 ];
-            }
-
-            Type GetLength( ) const
-            {
-                return std::sqrt( GetLengthSquared( ) );
-            }
-
-            Vec3 GetNormalized( ) const
-            {
-                return ( *this / this->GetLength( ) );
-            }
-
-            static Vec3 CreateRandomVector( )
-            {
-                return Vec3( RandomDouble( ), RandomDouble( ), RandomDouble( ) );
-            }
-
-            static Vec3 CreateRandomVector( const Type& min, const Type& max )
-            {
-                return Vec3( RandomDouble( min, max ), RandomDouble( min, max ), RandomDouble( min, max ) );
-            }
-
-            static Vec3 CreateRandomUnitVector( )
-            {
-                while ( true )
-                {
-                    Vec3 p             = CreateRandomVector( -1.0, 1.0 );
-                    Type lengthSquared = p.GetLengthSquared( );
-
-                    if ( 1e-16 < lengthSquared && lengthSquared <= 1 )
-                    {
-                        return p / sqrt( lengthSquared );
-                    }
-                }
-            }
-
-            bool NearZero( ) const
-            {
-                Type s = 1e-8;
-                return ( std::fabs( e[ 0 ] ) < s ) && ( std::fabs( e[ 1 ] ) < s ) && ( std::fabs( e[ 2 ] ) < s );
-            }
-    };
-
-    template <typename Type>
-    Vec3<Type> operator+( const Vec3<Type>& u, const Vec3<Type>& v )
-    {
-        return Vec3<Type>( u.e[ 0 ] + v.e[ 0 ], u.e[ 1 ] + v.e[ 1 ], u.e[ 2 ] + v.e[ 2 ] );
-    }
-
-    template <typename Type>
-    Vec3<Type> operator-( const Vec3<Type>& u, const Vec3<Type>& v )
-    {
-        return Vec3<Type>( u.e[ 0 ] - v.e[ 0 ], u.e[ 1 ] - v.e[ 1 ], u.e[ 2 ] - v.e[ 2 ] );
-    }
-
-    template <typename Type>
-    Vec3<Type> operator*( const Vec3<Type>& u, const Vec3<Type>& v )
-    {
-        return Vec3<Type>( u.e[ 0 ] * v.e[ 0 ], u.e[ 1 ] * v.e[ 1 ], u.e[ 2 ] * v.e[ 2 ] );
-    }
-
-    template <typename Type>
-    Vec3<Type> operator*( const Type& t, const Vec3<Type>& v )
-    {
-        return Vec3<Type>( t * v.e[ 0 ], t * v.e[ 1 ], t * v.e[ 2 ] );
-    }
-
-    template <typename Type>
-    Vec3<Type> operator*( const Vec3<Type>& v, const Type& t )
-    {
-        return t * v;
-    }
-
-    template <typename Type>
-    Vec3<Type> operator/( const Vec3<Type>& v, const Type& t )
-    {
-        return Vec3<Type> { v[ 0 ] / t, v[ 1 ] / t, v[ 2 ] / t };
-    }
-
-    template <typename Type>
-    Type Dot( const Vec3<Type>& u, const Vec3<Type>& v )
-    {
-        return u.e[ 0 ] * v.e[ 0 ] + u.e[ 1 ] * v.e[ 1 ] + u.e[ 2 ] * v.e[ 2 ];
-    }
-
-    template <typename Type>
-    Vec3<Type> Cross( const Vec3<Type>& u, const Vec3<Type>& v )
-    {
-        return Vec3<Type>( u.e[ 1 ] * v.e[ 2 ] - u.e[ 2 ] * v.e[ 1 ], u.e[ 2 ] * v.e[ 0 ] - u.e[ 0 ] * v.e[ 2 ], u.e[ 0 ] * v.e[ 1 ] - u.e[ 1 ] * v.e[ 0 ] );
-    }
-
-    template <typename Type>
-    inline Vec3<Type> Reflect( const Vec3<Type>& vec, const Vec3<Type>& normal )
-    {
-        return vec - 2.0 * Dot( vec, normal ) * normal;
-    }
+    // extern template double Dot( const Vec3D& u, const Vec3D& v );
+    //  extern template Vec3D  Cross( const Vec3D& u, const Vec3D& v );
 
 
-    template <typename Type>
-    inline Vec3<Type> Rotate( const Vec3<Type>& vec, const Vec3<Type>& normalizedRotationAxis, Type angleDeg )
-    {
-        Type cosTheta = std::cos( DegreesToRadians( angleDeg ) );
-        Type sinTheta = std::sin( DegreesToRadians( angleDeg ) );
-
-        return vec * cosTheta + Cross( normalizedRotationAxis, vec ) * sinTheta + normalizedRotationAxis * Dot( normalizedRotationAxis, vec ) * ( 1.0 - cosTheta );
-    }
-
-    template <typename Type>
-    inline Vec3<Type> RotateAround( const Vec3<Type>& rotationPoint, Vec3<Type> vec, const Vec3<Type>& normalizedRotationAxis, Type angleDeg )
-    {
-        Type cosTheta       = std::cos( DegreesToRadians( angleDeg ) );
-        Type sinTheta       = std::sin( DegreesToRadians( angleDeg ) );
-
-        vec                -= rotationPoint;
-        Vec3<Type> rotated  = vec * cosTheta + Cross( normalizedRotationAxis, vec ) * sinTheta + normalizedRotationAxis * Dot( normalizedRotationAxis, vec ) * ( 1.0 - cosTheta );
-
-        return rotated     += rotationPoint;
-    }
+    using Vec3F   = Vec<float, 3>;
+    using Point3F = Point<float, 3>;
 
 
-    template <typename T>
-    using Point3  = Vec3<T>;
-
-
-    using Vec3D   = Vec3<double>;
-    using Point3D = Point3<double>;
-    extern template class Vec3<double>;
-
-    extern template Vec3D  operator+( const Vec3D& u, const Vec3D& v );
-    extern template Vec3D  operator-( const Vec3D& u, const Vec3D& v );
-    extern template Vec3D  operator*( const Vec3D& u, const Vec3D& v );
-    extern template Vec3D  operator*( const double& t, const Vec3D& v );
-    extern template Vec3D  operator*( const Vec3D& v, const double& t );
-    extern template Vec3D  operator/( const Vec3D& v, const double& t );
-    extern template double Dot( const Vec3D& u, const Vec3D& v );
-    extern template Vec3D  Cross( const Vec3D& u, const Vec3D& v );
-
-
-    using Vec3F   = Vec3<float>;
-    using Point3F = Point3<float>;
-    extern template class Vec3<float>;
-
-    extern template Vec3F operator+( const Vec3F& u, const Vec3F& v );
-    extern template Vec3F operator-( const Vec3F& u, const Vec3F& v );
-    extern template Vec3F operator*( const Vec3F& u, const Vec3F& v );
-    extern template Vec3F operator*( const float& t, const Vec3F& v );
-    extern template Vec3F operator*( const Vec3F& v, const float& t );
-    extern template Vec3F operator/( const Vec3F& v, const float& t );
-    extern template float Dot( const Vec3F& u, const Vec3F& v );
-    extern template Vec3F Cross( const Vec3F& u, const Vec3F& v );
+    // extern template float Dot( const Vec3F& u, const Vec3F& v );
+    // extern template Vec3F Cross( const Vec3F& u, const Vec3F& v );
 } // namespace RayTracer

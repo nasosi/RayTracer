@@ -11,9 +11,9 @@ namespace RayTracer
     {
 
         Vec3D oc           = this->center - ray.GetOrigin( );
-        auto  a            = ray.GetDirection( ).GetLengthSquared( );
+        auto  a            = ray.GetDirection( ).MagSquare( );
         auto  h            = Dot( ray.GetDirection( ), oc );
-        auto  c            = oc.GetLengthSquared( ) - radius * radius;
+        auto  c            = oc.MagSquare( ) - radius * radius;
 
         auto  discriminant = h * h - a * c;
         if ( discriminant < 0 )

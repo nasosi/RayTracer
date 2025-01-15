@@ -9,12 +9,12 @@ namespace RayTracer
 
     bool Lambertian::Scatter( const RayD& incomingRay, const HitRecord& hitRecord, RgbD& attenuation, RayD& scatteredRay ) const
     {
-        auto scatterDirection = hitRecord.surfaceNormal + Vec3D::CreateRandomUnitVector( );
+        auto scatterDirection = hitRecord.surfaceNormal + CreateRandomUnitVector<double>( );
 
         // auto scatter_direction = random_on_hemisphere(rec.normal);
 
         // Catch degenerate scatter direction
-        if ( scatterDirection.NearZero( ) )
+        if ( NearZero( scatterDirection ) )
         {
             scatterDirection = hitRecord.surfaceNormal;
         }

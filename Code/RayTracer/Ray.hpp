@@ -10,8 +10,8 @@ namespace RayTracer
     {
         private:
 
-            Point3<Type> origin;
-            Vec3<Type>   direction;
+            Point<Type, 3> origin;
+            Vec<Type, 3>   direction;
 
 
         public:
@@ -20,20 +20,20 @@ namespace RayTracer
             {
             }
 
-            Ray( const Point3<Type>& origin, const Vec3<Type>& direction ) : origin( origin ), direction( direction )
+            Ray( const Point<Type, 3>& origin, const Vec<Type, 3>& direction ) : origin( origin ), direction( direction )
             {
             }
 
-            const Point3<Type>& GetOrigin( ) const
+            const Point<Type, 3>& GetOrigin( ) const
             {
                 return origin;
             }
-            const Vec3<Type>& GetDirection( ) const
+            const Vec<Type, 3>& GetDirection( ) const
             {
                 return direction;
             }
 
-            Point3<Type> GetPointAt( Type t ) const
+            Point<Type, 3> GetPointAt( Type t ) const
             {
                 return origin + t * direction;
             }

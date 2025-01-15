@@ -1,45 +1,46 @@
 #include "Camera.hpp"
 #include "Material.hpp"
 
+#include "omp.h"
 
 namespace RayTracer
 {
     Camera::Camera( const double& focalLength, const double& verticalFieldOfViewInDegrees ) :
         focalLength( focalLength ),
         verticalFieldOfViewInDegrees( verticalFieldOfViewInDegrees ),
-        center( 0.0, 0.0, 0.0 ),
-        lookAt( 0.2, 0.0, -1.0 ),
-        upVector( 0.0, 1.0, 0.0 )
+        center { 0.0, 0.0, 0.0 },
+        lookAt { 0.2, 0.0, -1.0 },
+        upVector { 0.0, 1.0, 0.0 }
     {
     }
 
     void Camera::CalculateViewportParameters( double windowWidth, double windowHeight )
     {
-        double aspectRatio    = double( windowWidth ) / windowHeight;
-        double theta          = DegreesToRadians( verticalFieldOfViewInDegrees );
-        double h              = std::tan( theta / 2 );
-        double viewportHeight = 2.0 * h * focalLength;
-        double viewportWidth  = viewportHeight * aspectRatio;
+        double aspectRatio      = double( windowWidth ) / windowHeight;
+        double theta            = DegreesToRadians( verticalFieldOfViewInDegrees );
+        double h                = std::tan( theta / 2 );
+        double viewportHeight   = 2.0 * h * focalLength;
+        double viewportWidth    = viewportHeight * aspectRatio;
 
-        Vec3D  w              = ( center - lookAt ).GetNormalized( );
-        Vec3D  u              = Cross( upVector, w ).GetNormalized( );
-        Vec3D  v              = Cross( w, u );
+        Vec3D  w                = Normalize( center - lookAt );
+        Vec3D  u                = Normalize( Cross( upVector, w ) );
+        Vec3D  v                = Cross( w, u );
 
-        Vec3D  viewportU      = viewportWidth * u;
-        Vec3D  viewportV      = -(viewportHeight)*v;
+        Vec3D  viewportU        = viewportWidth * u;
+        Vec3D  viewportV        = -(viewportHeight)*v;
 
-        pixelDeltaU           = viewportU / double( windowWidth );
-        pixelDeltaV           = viewportV / double( windowHeight );
+        pixelDeltaU             = viewportU / double( windowWidth );
+        pixelDeltaV             = viewportV / double( windowHeight );
 
-        Vec3D viewportTopLeft = center - ( focalLength * w ) - viewportU / 2.0 - viewportV / 2.0;
+        Point3D viewportTopLeft = center - ( focalLength * w ) - viewportU / 2.0 - viewportV / 2.0;
 
-        topLeftPixelLocation  = viewportTopLeft + ( pixelDeltaU + pixelDeltaV ) / 2.0;
+        topLeftPixelLocation    = viewportTopLeft + ( pixelDeltaU + pixelDeltaV ) / 2.0;
     }
 
     RayD Camera::CreateRandomRayAt( const SizeType& i, const SizeType& j )
     {
-        double  xOffset                = RandomDouble( ) - 0.5;
-        double  yOffset                = RandomDouble( ) - 0.5;
+        RealType xOffset                = RandomReal<RealType>( ) - 0.5;
+        RealType yOffset                = RandomReal<RealType>( ) - 0.5;
 
         Point3D pertrubedPixelLocation = topLeftPixelLocation + ( ( i + xOffset ) * pixelDeltaU ) + ( ( j + yOffset ) * pixelDeltaV );
         Vec3D   rayDirection           = pertrubedPixelLocation - center;
@@ -49,7 +50,6 @@ namespace RayTracer
 
     void Camera::Render( const Hittable& world, RgbaImageView8& renderBuffer, SizeType maxBounces, SizeType samplesPerPixel )
     {
-
         CalculateViewportParameters( renderBuffer.GetWidth( ), renderBuffer.GetHeight( ) );
 
         double summationDivisor = double( samplesPerPixel );
@@ -95,7 +95,7 @@ namespace RayTracer
             return RgbD( 0, 0, 0 );
         }
 
-        auto a = 0.5 * ( ray.GetDirection( ).GetNormalized( ).y( ) + 1.0 );
+        auto a = 0.5 * ( Normalize( ray.GetDirection( ) ).y( ) + 1.0 );
 
         return ( 1.0 - a ) * RgbD( 1.0, 1.0, 1.0 ) + a * RgbD( 0.5, 0.7, 1.0 );
     }
@@ -105,22 +105,22 @@ namespace RayTracer
         lookAt = p;
     }
 
-    void Camera::Rotate( Vec2<double> rotationAnglesDeg )
+    void Camera::Rotate( Vec<double,2> rotationAnglesDeg )
     {
         lookAt      = RotateAround( center, lookAt, Vec3D { 0.0, 1.0, 0.0 }, rotationAnglesDeg.x( ) );
 
-        Vec3D fwd   = ( center - lookAt ).GetNormalized( );
-        Vec3D right = Cross( upVector, fwd ).GetNormalized( );
+        Vec3D fwd   = Normalize( center - lookAt );
+        Vec3D right = Normalize( Cross( upVector, fwd ) );
         lookAt      = RotateAround( center, lookAt, right, rotationAnglesDeg.y( ) );
     }
 
-    void Camera::Pan( Vec2<double> panVector )
+    void Camera::Pan( Vec<double,2> panVector )
     {
-        Vec3D fwd   = ( center - lookAt ).GetNormalized( );
+        Vec3D fwd   = Normalize( center - lookAt );
         center      = center + fwd * panVector.y( );
         lookAt      = lookAt + fwd * panVector.y( );
 
-        Vec3D right = Cross( upVector, fwd ).GetNormalized( );
+        Vec3D right = Normalize( Cross( upVector, fwd ) );
         center      = center + right * panVector.x( );
         lookAt      = lookAt + right * panVector.x( );
     }

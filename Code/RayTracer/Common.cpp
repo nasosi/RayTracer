@@ -1,5 +1,10 @@
 #include "Common.hpp"
 
 
-template uint8_t RayTracer::FloatingToByte<float>( const float& );
-template uint8_t RayTracer::FloatingToByte<double>( const double& );
+namespace RayTracer
+{
+
+    template uint8_t FloatingToByte<float>( const float& );
+    template uint8_t FloatingToByte<double>( const double& );
+
+} // namespace RayTracer

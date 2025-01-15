@@ -7,10 +7,10 @@
 
 namespace RayTracer
 {
+    using SizeType        = std::size_t;
+    using RealType        = double;
 
-    using SizeType = std::size_t;
-
-    constexpr double pi = 3.1415926535897932385;
+    constexpr RealType pi = 3.1415926535897932385;
 
     template <typename T>
     using SharedPointer = std::shared_ptr<T>;
@@ -22,17 +22,20 @@ namespace RayTracer
         return uint8_t( std::max( 0, std::min( 255, int( floor( v * FloatingType( 256.0 ) ) ) ) ) );
     }
 
-    inline double RandomDouble( )
+    template <typename T>
+    inline T RandomReal( )
     {
-        return std::rand( ) / ( RAND_MAX + 1.0 );
+        return T( std::rand() ) / ( RAND_MAX + 1.0 );
     }
 
-    inline double RandomDouble( double min, double max )
+    template <typename T>
+    inline T RandomReal( T min, T max )
     {
-        return min + ( max - min ) * RandomDouble( );
+        return min + ( max - min ) * RandomReal<T>( );
     }
 
-    inline double DegreesToRadians( double deg )
+    template <typename T>
+    inline T DegreesToRadians( T deg )
     {
         return deg * pi / 180.0;
     }

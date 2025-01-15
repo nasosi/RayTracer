@@ -210,25 +210,8 @@ namespace RayTracer
         windowHeight = 480;
     }
 
-    void Application::InitRenderBuffer( ImageView<Rgba8>& renderBuffer )
+    void Application::InitRenderBuffer( ImageView<Rgba8>& /* renderBuffer */ )
     {
-        for ( int row = 0; row != renderBuffer.GetHeight( ); row++ )
-        {
-            std::span<Rgba8> rowSpan = renderBuffer.GetRowSpan( row );
-
-            for ( int col = 0; col != rowSpan.size( ); col++ )
-            {
-                Rgba8& p = rowSpan[ col ];
-
-                double x = double( col ) / renderBuffer.GetWidth( );
-                double y = double( row ) / renderBuffer.GetHeight( );
-
-                p.r      = RayTracer::FloatingToByte( ( 1.0 - y ) * x );
-                p.g      = RayTracer::FloatingToByte( ( 1.0 - y ) * ( 1 - x ) );
-                p.b      = RayTracer::FloatingToByte( ( 1.0 - x ) * y );
-                p.a      = 255;
-            }
-        }
     }
 
     bool Application::Iterate( const double& timeSec, ImageView<Rgba8>& renderBuffer )
@@ -237,6 +220,7 @@ namespace RayTracer
         static double   prevReportTimeSec = 0;
         static SizeType reportFrameCount  = 0;
 
+        
 
         double          deltaTimeSec      = timeSec - prevFrameTimeSec;
         double          reportDurationSec = timeSec - prevReportTimeSec;
@@ -244,7 +228,7 @@ namespace RayTracer
         if ( reportDurationSec >= 1.0 )
         {
             std::cout << "Fps: " << double( reportFrameCount ) / reportDurationSec << std::endl;
-            reportFrameCount  = 0;
+            reportFrameCount  = 1;
             prevReportTimeSec = timeSec;
         }
         else
@@ -259,30 +243,45 @@ namespace RayTracer
             double deltaX   = mousePos.x( ) - rotateStart.x( );
             double deltaY   = mousePos.y( ) - rotateStart.y( );
 
-            camera.Rotate( Vec2<double> { -5.0 * deltaX * deltaTimeSec, -5.0 * deltaY * deltaTimeSec } );
+            camera.Rotate( Vec<double, 2> { -10.0 * deltaX * deltaTimeSec, -10.0 * deltaY * deltaTimeSec } );
 
             rotateStart = mousePos;
         }
 
+        bool moving = false;
 
         if ( moveBack )
         {
-            camera.Pan( Vec2<double> { 0, 10.0 * deltaTimeSec } );
+            camera.Pan( Vec<double, 2> { 0, moveVelocityPerSec * deltaTimeSec } );
+            moving = true;
         }
 
         if ( moveForward )
         {
-            camera.Pan( Vec2<double> { 0, -10.0 * deltaTimeSec } );
+            camera.Pan( Vec<double, 2> { 0, -moveVelocityPerSec * deltaTimeSec } );
+            moving = true;
         }
 
         if ( moveLeft )
         {
-            camera.Pan( Vec2<double> { -10.0 * deltaTimeSec, 0.0 } );
+            camera.Pan( Vec<double, 2> { -moveVelocityPerSec * deltaTimeSec, 0.0 } );
+            moving = true;
         }
 
         if ( moveRight )
         {
-            camera.Pan( Vec2<double> { 10.0 * deltaTimeSec, 0.0 } );
+            camera.Pan( Vec<double, 2> { moveVelocityPerSec * deltaTimeSec, 0.0 } );
+            moving = true;
+        }
+
+        if ( moving )
+        {
+            moveVelocityPerSec += moveAccelerationPerSecSq * deltaTimeSec;
+        }
+        else
+        {
+            moving             = true;
+            moveVelocityPerSec = minMoveVelocityPerSec;
         }
 
         camera.Render( world, renderBuffer, maxBounces, samplesPerPixel );

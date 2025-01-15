@@ -36,3 +36,9 @@ target_include_directories(RayTracer PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 target_link_libraries(RayTracer PUBLIC OpenMP::OpenMP_CXX)
 
 set_property(TARGET RayTracer PROPERTY CXX_STANDARD 20)
+
+if ( MSVC )
+
+	target_compile_options(RayTracer PUBLIC "/fp:fast")
+
+endif( )
