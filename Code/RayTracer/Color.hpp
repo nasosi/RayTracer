@@ -89,13 +89,13 @@ namespace RayTracer
 
 
     template <class ValueType, class ColorType>
-    class MonochromaticInterface : //
+    class __declspec( empty_bases ) MonochromaticInterface : //
                                    public ChromaInterface<ValueType, 1, ColorType>
     {
     };
 
     template <class ValueType, class ColorType>
-    class TrichromaticInterface : //
+    class __declspec( empty_bases ) TrichromaticInterface : //
                                   public ChromaInterface<ValueType, 3, ColorType>
     {
     };
@@ -171,7 +171,7 @@ namespace RayTracer
                     } );
 
                 //
-                ( *thisColor )[ ArraySize - 1 ]++;
+                this->weight( )++;
 
                 return *thisColor;
             }
@@ -187,7 +187,7 @@ namespace RayTracer
                     } );
 
                 //
-                ( *thisColor )[ ArraySize - 1 ] += fc[ ArraySize - 1 ];
+                this->weight( ) += fc.weight( );
 
                 return *thisColor;
             }
@@ -219,7 +219,7 @@ namespace RayTracer
     };
 
     template <SizeType ArraySize, class ValueType, class ColorType, class FlatColorType>
-    class FlatTrichromaticInterface : //
+    class __declspec( empty_bases ) FlatTrichromaticInterface : //
                                       public FlatChromaInterface<ValueType, 3, ArraySize, ColorType, FlatColorType>
     {
     };
@@ -284,12 +284,12 @@ namespace RayTracer
         return color *= s;
     }
 
-    //template <typename ValueType, SizeType ColorComponentCount, SizeType ArraySize, class ColorType, class FlatColorType>
-    //inline FlatRgb<ValueType> operator+( FlatChromaInterface<ValueType, ColorComponentCount, ArraySize, ColorType, FlatColorType>        a,
-    //                                     const FlatChromaInterface<ValueType, ColorComponentCount, ArraySize, ColorType, FlatColorType>& b )
-    //{
-    //    return ( *static_cast<FlatColorType*>( &a ) ) += ( *static_cast<const FlatColorType*>( &b ) );
-    //}
+  /*  template <typename ValueType, SizeType ColorComponentCount, SizeType ArraySize, class ColorType, class FlatColorType>
+    inline FlatRgb<ValueType> operator+( FlatChromaInterface<ValueType, ColorComponentCount, ArraySize, ColorType, FlatColorType>        a,
+                                         const FlatChromaInterface<ValueType, ColorComponentCount, ArraySize, ColorType, FlatColorType>& b )
+    {
+        return ( *static_cast<FlatColorType*>( &a ) ) += ( *static_cast<const FlatColorType*>( &b ) );
+    }*/
 
     template <typename ValueType>
     FlatRgb<ValueType> operator+( FlatRgb<ValueType> a, const FlatRgb<ValueType>& b )
@@ -307,9 +307,7 @@ namespace RayTracer
     using FlatRgbD = FlatRgb<double>;
 
     Rgb8 ConvertToRgb8( const RgbD& color );
-
     RgbD LinearToGamma( const RgbD& color, double gamma = 2.2 );
-
 
     extern template class Rgba<uint8_t>;
     extern template class Rgba<float>;
