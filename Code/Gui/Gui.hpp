@@ -19,7 +19,7 @@ namespace RayTracer
             Camera       camera;
 
             bool         rotate = false;
-            Point2F      rotateStart;
+            Point2f      rotateStart;
 
             bool         moveBack                 = false;
             bool         moveForward              = false;
@@ -40,14 +40,14 @@ namespace RayTracer
             bool         Iterate( const double& timeSec, ImageView<Rgba8>& renderBuffer );
 
 
-            Point2F      GetMousePosition( ) const;
+            Point2f      GetMousePosition( ) const;
 
             virtual void HandleKeyDown( int keyCode );
             virtual void HandleKeyUp( int keyCode );
 
             virtual void HandleLeftMouseButtonClickEvent( float x, float y );
             virtual void HandleRightMouseButtonClickEvent( float x, float y );
-            virtual void HandleBothMouseButtonsClickEvent( float x, float y );
+            virtual void HandleBothMouseButtonsClickedEvent( float x, float y );
 
             virtual void HandleLeftMouseButtonUnclickEvent( float x, float y );
             virtual void HandleRightMouseButtonUnclickEvent( float x, float y );

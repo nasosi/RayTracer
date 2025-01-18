@@ -1,6 +1,5 @@
-#include "Gui.hpp"
 #include "Algebra.hpp"
-
+#include "Gui.hpp"
 
 
 extern "C"
@@ -8,6 +7,7 @@ extern "C"
     RayTracer::Application* CreateApplication( )
     {
         using namespace RayTracer;
+
 
         return new Application;
     }

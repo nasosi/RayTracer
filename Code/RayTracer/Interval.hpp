@@ -23,22 +23,22 @@ namespace RayTracer
                 return to - from;
             }
 
-            bool Contains( const Type& x )
+            inline bool Contains( const Type& x )
             {
                 return from <= x && x <= to;
             }
 
-            bool Surrounds( const Type& x ) const
+            inline bool Surrounds( const Type& x ) const
             {
                 return from < x && x < to;
             }
 
-            const Type &GetFrom() const
+            inline const Type& GetFrom( ) const
             {
                 return from;
             }
 
-            const Type& GetTo( ) const
+            inline const Type& GetTo( ) const
             {
                 return to;
             }

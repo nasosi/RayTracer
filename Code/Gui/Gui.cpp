@@ -14,20 +14,20 @@ namespace RayTracer
 
     HittableList CreateDemoWorld( )
     {
-        auto groundMaterial       = std::make_shared<Lambertian>( RgbD( 0.8, 0.8, 0.0 ) );
-        auto centerSphereMaterial = std::make_shared<Lambertian>( RgbD( 0.1, 0.2, 0.5 ) );
-        auto otherSphereMaterial  = std::make_shared<Lambertian>( RgbD( 0.5, 0.2, 0.1 ) );
-        auto leftSphereMaterial   = std::make_shared<Metal>( RgbD( 0.8, 0.8, 0.8 ) );
-        auto rightSphereMaterial  = std::make_shared<Metal>( RgbD( 0.8, 0.6, 0.2 ) );
+        auto groundMaterial       = std::make_shared<Lambertian>( RgbD { 0.8, 0.8, 0.0 } );
+        auto centerSphereMaterial = std::make_shared<Lambertian>( RgbD { 0.1, 0.2, 0.5 } );
+        auto otherSphereMaterial  = std::make_shared<Lambertian>( RgbD { 0.5, 0.2, 0.1 } );
+        auto leftSphereMaterial   = std::make_shared<Metal>( RgbD { 0.8, 0.8, 0.8 } );
+        auto rightSphereMaterial  = std::make_shared<Metal>( RgbD { 0.8, 0.6, 0.2 } );
 
         //
         HittableList world;
-        world.objects.push_back( std::make_shared<Sphere>( Point3D { 0.0, -100.5, -1.0 }, 100.0, groundMaterial ) );
-        world.objects.push_back( std::make_shared<Sphere>( Point3D { 0.0, 0, -1.2 }, 0.5, centerSphereMaterial ) );
-        world.objects.push_back( std::make_shared<Sphere>( Point3D { 0.0, 0, -4.5 }, 0.3, otherSphereMaterial ) );
+        world.objects.push_back( std::make_shared<Sphere>( Point3d { 0.0, -100.5, -1.0 }, 100.0, groundMaterial ) );
+        world.objects.push_back( std::make_shared<Sphere>( Point3d { 0.0, 0, -1.2 }, 0.5, centerSphereMaterial ) );
+        world.objects.push_back( std::make_shared<Sphere>( Point3d { 0.0, 0, -4.5 }, 0.3, otherSphereMaterial ) );
 
-        world.objects.push_back( std::make_shared<Sphere>( Point3D { -1.0, 0.0, -1.0 }, 0.5, leftSphereMaterial ) );
-        world.objects.push_back( std::make_shared<Sphere>( Point3D { 1.0, 0.0, -1.0 }, 0.5, rightSphereMaterial ) );
+        world.objects.push_back( std::make_shared<Sphere>( Point3d { -1.0, 0.0, -1.0 }, 0.5, leftSphereMaterial ) );
+        world.objects.push_back( std::make_shared<Sphere>( Point3d { 1.0, 0.0, -1.0 }, 0.5, rightSphereMaterial ) );
 
         return world;
     }
@@ -140,7 +140,7 @@ namespace RayTracer
 
                     if ( flags & SDL_BUTTON_MASK( 1 ) & SDL_BUTTON_MASK( 2 ) )
                     {
-                        application->HandleBothMouseButtonsClickEvent( x, y );
+                        application->HandleBothMouseButtonsClickedEvent( x, y );
                     }
 
                     if ( flags & SDL_BUTTON_MASK( 1 ) )
@@ -291,12 +291,12 @@ namespace RayTracer
         return true;
     }
 
-    Point2F Application::GetMousePosition( ) const
+    Point2f Application::GetMousePosition( ) const
     {
         float x, y;
         SDL_GetMouseState( &x, &y );
 
-        return Point2F { x, y };
+        return Point2f { x, y };
     }
 
     void Application::HandleKeyDown( int keyCode )
@@ -356,14 +356,14 @@ namespace RayTracer
     void Application::HandleLeftMouseButtonClickEvent( float x, float y )
     {
         rotate      = true;
-        rotateStart = Point2F { x, y };
+        rotateStart = Point2f { x, y };
     }
 
     void Application::HandleRightMouseButtonClickEvent( float x, float y )
     {
     }
 
-    void Application::HandleBothMouseButtonsClickEvent( float x, float y )
+    void Application::HandleBothMouseButtonsClickedEvent( float x, float y )
     {
     }
 

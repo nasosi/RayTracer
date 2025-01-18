@@ -13,13 +13,13 @@ namespace RayTracer
 
     struct HitRecord
     {
-            Point3D                 point;
-            Vec3D                   surfaceNormal;
+            Point3d                 point;
+            Vec3d                   surfaceNormal;
             double                  t;
             bool                    frontFace;
             SharedPointer<Material> material;
 
-            void                    SetSurfaceNormal( const RayD& ray, const Vec3D& surfaceOutwardNormal )
+            void                    SetSurfaceNormal( const RayD& ray, const Vec3d& surfaceOutwardNormal )
             {
                 this->frontFace     = Dot( ray.GetDirection( ), surfaceOutwardNormal );
                 this->surfaceNormal = this->frontFace ? surfaceOutwardNormal : -surfaceOutwardNormal;
@@ -53,13 +53,13 @@ namespace RayTracer
     {
         private:
 
-            Point3D                 center;
+            Point3d                 center;
             double                  radius;
             SharedPointer<Material> material;
 
         public:
 
-            Sphere( const Point3D& center, double radius, SharedPointer<Material> material );
+            Sphere( const Point3d& center, double radius, SharedPointer<Material> material );
 
             bool Hit( const RayD& ray, const IntervalD& rayParameterInterval, HitRecord& hitRecord ) const override;
     };

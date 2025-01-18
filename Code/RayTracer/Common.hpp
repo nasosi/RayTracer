@@ -17,7 +17,7 @@ namespace RayTracer
 
 
     template <class FloatingType>
-    uint8_t FloatingToByte( const FloatingType& v )
+    inline uint8_t FloatingToByte( const FloatingType& v )
     {
         return uint8_t( std::max( 0, std::min( 255, int( floor( v * FloatingType( 256.0 ) ) ) ) ) );
     }

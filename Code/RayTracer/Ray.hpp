@@ -33,7 +33,7 @@ namespace RayTracer
                 return direction;
             }
 
-            Point<Type, 3> GetPointAt( Type t ) const
+            inline Point<Type, 3> GetPointAt( Type t ) const
             {
                 return origin + t * direction;
             }

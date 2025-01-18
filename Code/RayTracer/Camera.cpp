@@ -18,21 +18,21 @@ namespace RayTracer
     {
         double aspectRatio      = double( windowWidth ) / windowHeight;
         double theta            = DegreesToRadians( verticalFieldOfViewInDegrees );
-        double h                = std::tan( theta / 2 );
+        double h                = std::tan( theta / 2.0 );
         double viewportHeight   = 2.0 * h * focalLength;
         double viewportWidth    = viewportHeight * aspectRatio;
 
-        Vec3D  w                = Normalize( center - lookAt );
-        Vec3D  u                = Normalize( Cross( upVector, w ) );
-        Vec3D  v                = Cross( w, u );
+        Vec3d  w                = Normalize( center - lookAt );
+        Vec3d  u                = Normalize( Cross( upVector, w ) );
+        Vec3d  v                = Cross( w, u );
 
-        Vec3D  viewportU        = viewportWidth * u;
-        Vec3D  viewportV        = -(viewportHeight)*v;
+        Vec3d  viewportU        = viewportWidth * u;
+        Vec3d  viewportV        = -(viewportHeight)*v;
 
         pixelDeltaU             = viewportU / double( windowWidth );
         pixelDeltaV             = viewportV / double( windowHeight );
 
-        Point3D viewportTopLeft = center - ( focalLength * w ) - viewportU / 2.0 - viewportV / 2.0;
+        Point3d viewportTopLeft = center - ( focalLength * w ) - viewportU / 2.0 - viewportV / 2.0;
 
         topLeftPixelLocation    = viewportTopLeft + ( pixelDeltaU + pixelDeltaV ) / 2.0;
     }
@@ -42,8 +42,8 @@ namespace RayTracer
         RealType xOffset                = RandomReal<RealType>( ) - 0.5;
         RealType yOffset                = RandomReal<RealType>( ) - 0.5;
 
-        Point3D pertrubedPixelLocation = topLeftPixelLocation + ( ( i + xOffset ) * pixelDeltaU ) + ( ( j + yOffset ) * pixelDeltaV );
-        Vec3D   rayDirection           = pertrubedPixelLocation - center;
+        Point3d  pertrubedPixelLocation = topLeftPixelLocation + ( ( i + xOffset ) * pixelDeltaU ) + ( ( j + yOffset ) * pixelDeltaV );
+        Vec3d    rayDirection           = pertrubedPixelLocation - center;
 
         return RayD( center, rayDirection );
     }
@@ -61,15 +61,15 @@ namespace RayTracer
 
             for ( int i = 0; i < renderBuffer.GetWidth( ); i++ )
             {
-                RgbD pixelColor( 0, 0, 0 );
+                FlatRgbD pixelColor { 0, 0, 0, 0 };
 
-                for ( int sample = 0; sample < samplesPerPixel; sample++ )
+                while ( pixelColor.weight( ) < samplesPerPixel )
                 {
                     RayD ray    = CreateRandomRayAt( i, j );
                     pixelColor += RayColor( ray, maxBounces, world );
                 }
 
-                imageRow[ i ] = ConvertToRgba8( LinearToGamma( pixelColor / summationDivisor ) );
+                imageRow[ i ] = ConvertToRgba8( LinearToGamma( pixelColor.GetUnitized( ) ) );
             }
         }
     }
@@ -78,7 +78,7 @@ namespace RayTracer
     {
         if ( maxBounces == 0 )
         {
-            return RgbD( 0, 0, 0 );
+            return RgbD { 0, 0, 0 };
         }
 
         HitRecord hitRecord;
@@ -92,35 +92,35 @@ namespace RayTracer
             {
                 return attenuation * RayColor( scatteredRay, maxBounces - 1, world );
             }
-            return RgbD( 0, 0, 0 );
+            return RgbD { 0, 0, 0 };
         }
 
         auto a = 0.5 * ( Normalize( ray.GetDirection( ) ).y( ) + 1.0 );
 
-        return ( 1.0 - a ) * RgbD( 1.0, 1.0, 1.0 ) + a * RgbD( 0.5, 0.7, 1.0 );
+        return ( ( 1.0 - a ) * FlatRgbD { 1.0, 1.0, 1.0, 0.0 } + a * FlatRgbD { 0.5, 0.7, 1.0, 1.0 } ).GetUnitized( );
     }
 
-    void Camera::SetLookAt( const Point3D& p )
+    void Camera::SetLookAt( const Point3d& p )
     {
         lookAt = p;
     }
 
-    void Camera::Rotate( Vec<double,2> rotationAnglesDeg )
+    void Camera::Rotate( Vec<double, 2> rotationAnglesDeg )
     {
-        lookAt      = RotateAround( center, lookAt, Vec3D { 0.0, 1.0, 0.0 }, rotationAnglesDeg.x( ) );
+        lookAt      = RotatePointAround( center, lookAt, Vec3d { 0.0, 1.0, 0.0 }, rotationAnglesDeg.x( ) );
 
-        Vec3D fwd   = Normalize( center - lookAt );
-        Vec3D right = Normalize( Cross( upVector, fwd ) );
-        lookAt      = RotateAround( center, lookAt, right, rotationAnglesDeg.y( ) );
+        Vec3d fwd   = Normalize( center - lookAt );
+        Vec3d right = Normalize( Cross( upVector, fwd ) );
+        lookAt      = RotatePointAround( center, lookAt, right, rotationAnglesDeg.y( ) );
     }
 
-    void Camera::Pan( Vec<double,2> panVector )
+    void Camera::Pan( Vec<double, 2> panVector )
     {
-        Vec3D fwd   = Normalize( center - lookAt );
+        Vec3d fwd   = Normalize( center - lookAt );
         center      = center + fwd * panVector.y( );
         lookAt      = lookAt + fwd * panVector.y( );
 
-        Vec3D right = Normalize( Cross( upVector, fwd ) );
+        Vec3d right = Normalize( Cross( upVector, fwd ) );
         center      = center + right * panVector.x( );
         lookAt      = lookAt + right * panVector.x( );
     }

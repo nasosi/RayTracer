@@ -4,9 +4,9 @@
 #include "Color.hpp"
 #include "Common.hpp"
 
+#include <fstream>
 #include <span>
 #include <vector>
-#include <fstream>
 
 namespace RayTracer
 {
@@ -65,10 +65,10 @@ namespace RayTracer
     {
         private:
 
-            SizeType width = 0;
-            SizeType height = 0;
+            SizeType width           = 0;
+            SizeType height          = 0;
             SizeType rowWidthInBytes = 0;
-            uint8_t* buffer = nullptr;
+            uint8_t* buffer          = nullptr;
 
         public:
 
@@ -120,8 +120,8 @@ namespace RayTracer
     template <class ImageType>
     bool WritePPM( const ImageType& image, const char* fileName )
     {
-    
-     std::ofstream imageFileStream( fileName );
+
+        std::ofstream imageFileStream( fileName );
 
         if ( !imageFileStream.is_open( ) )
         {
@@ -136,7 +136,7 @@ namespace RayTracer
 
             for ( const auto& color : row )
             {
-                imageFileStream << int( color.r ) << ' ' << int( color.g ) << ' ' << int( color.b ) << '\n';
+                imageFileStream << int( color.r( ) ) << ' ' << int( color.g( ) ) << ' ' << int( color.b( ) ) << '\n';
             }
         }
 
@@ -146,7 +146,7 @@ namespace RayTracer
     }
 
     template <class ImageType>
-    bool WritePPM(const SharedPointer<ImageType> image, const char* fileName)
+    bool WritePPM( const SharedPointer<ImageType> image, const char* fileName )
     {
         return WritePPM( *image.get( ), fileName );
     }

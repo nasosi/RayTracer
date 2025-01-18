@@ -12,38 +12,48 @@ namespace RayTracer
 
             //
 
-            const T& operator[]( const SizeType& i ) const
+            inline const T& operator[]( const SizeType& i ) const
             {
                 return data[ i ];
             }
 
-            T& operator[]( const SizeType& i )
+            inline T& operator[]( const SizeType& i )
             {
                 return data[ i ];
             }
 
-            constexpr SizeType GetDimension( )
+            inline constexpr SizeType GetDimension( )
             {
                 return Dimension;
             }
 
-            const T* GetData( ) const
+            inline const T* GetData( ) const
             {
                 return data;
             }
 
-            T* GetData( )
+            inline T* GetData( )
             {
                 return data;
             }
+
+            template <class Func>
+            static constexpr inline void Loop_Constexpr( Func&& f )
+            {
+                For_Constexpr<SizeType, SizeType(0), Dimension>( std::forward<Func>( f ) );
+            }
+
+
     };
 
+
+#define RAYTRACER_EXTERNALIZE_ARRAY( T, Dimension ) extern template class Array<T, Dimension>;
 #define RAYTRACER_INSTANTIATE_ARRAY( T, Dimension ) template class Array<T, Dimension>;
-#define RAYTRACER_EXTERNALIZE_ARRAY( T, Dimension ) extern RAYTRACER_INSTANTIATE_ARRAY( T, Dimension )
 
     RAYTRACER_EXTERNALIZE_ARRAY( float, 2 )
     RAYTRACER_EXTERNALIZE_ARRAY( double, 2 )
     RAYTRACER_EXTERNALIZE_ARRAY( float, 3 )
     RAYTRACER_EXTERNALIZE_ARRAY( double, 3 )
+
 
 } // namespace RayTracer

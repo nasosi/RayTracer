@@ -17,15 +17,15 @@ namespace RayTracer
         private:
 
             double  focalLength;
-            double  verticalFieldOfViewInDegrees = 90;
+            double  verticalFieldOfViewInDegrees;
 
-            Point3D center;
-            Point3D lookAt;
-            Vec3D   upVector;
-            Point3D topLeftPixelLocation;
+            Point3d center;
+            Point3d lookAt;
+            Vec3d   upVector;
+            Point3d topLeftPixelLocation;
 
-            Vec3D   pixelDeltaU;
-            Vec3D   pixelDeltaV;
+            Vec3d   pixelDeltaU;
+            Vec3d   pixelDeltaV;
 
             void    CalculateViewportParameters( double windowWidth, double windowHeight );
 
@@ -39,16 +39,16 @@ namespace RayTracer
 
             RgbD           RayColor( const RayD& ray, SizeType maxBounces, const Hittable& world ) const;
 
-            const Point3D& GetLookAt( ) const
+            const Point3d& GetLookAt( ) const
             {
                 return lookAt;
             }
 
-            void SetLookAt( const Point3D& p );
+            void SetLookAt( const Point3d& p );
 
-            void Rotate( Vec<double,2> rotationAnglesDeg );
+            void Rotate( Vec<double, 2> rotationAnglesDeg );
 
-            void Pan( Vec<double,2> panVector );
+            void Pan( Vec<double, 2> panVector );
     };
 
 
