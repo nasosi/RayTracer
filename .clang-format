@@ -185,7 +185,7 @@ SpaceBeforeSquareBrackets: false
 SpaceInEmptyBlock: true
 SpaceInEmptyParentheses: true
 SpacesBeforeTrailingComments: 1
-SpacesInAngles: false
+SpacesInAngles: true
 SpacesInCStyleCastParentheses: false
 SpacesInConditionalStatement: false
 SpacesInContainerLiterals: true

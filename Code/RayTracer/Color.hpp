@@ -11,34 +11,32 @@
 namespace RayTracer
 {
 
-    template <typename ValueType, SizeType DataArraySize, class Derived>
-    class ColorDataBuffer : public Array<ValueType, DataArraySize>
+    template < typename valueType, SizeType dataArraySize, class colorType >
+    class ColorDataBuffer : public Array< valueType, dataArraySize >
     {
         public:
 
-            using ColorType = Derived;
+            static const SizeType DataArraySize = dataArraySize;
+            using ValueType                     = valueType;
+            using ColorType                     = colorType;
     };
 
 
-    template <class ValueType, SizeType ColorComponentCount, class ColorType>
+    template < class ColorType, SizeType colorComponentCount >
     class ChromaInterface
     {
-        private:
-
-            static const bool ValueType_Is_FloatingPoint = std::is_floating_point_v<ValueType>;
-
         public:
 
-            static const SizeType ColorCount = ColorComponentCount;
+            static const SizeType ColorComponentCount = colorComponentCount;
 
-            template <typename Lazy = ColorType>
-            inline typename std::enable_if<( ValueType_Is_FloatingPoint ), Lazy&>::type& operator*=( const ValueType& m )
+            template < typename Lazy = ColorType >
+            inline typename std::enable_if< (std::is_floating_point_v< typename Lazy::ValueType >), Lazy& >::type operator*=( const typename Lazy::ValueType& m )
             {
                 assert( m >= 0 );
 
-                ColorType* thisColor = static_cast<ColorType*>( this );
+                ColorType* thisColor = static_cast< ColorType* >( this );
 
-                For_Constexpr<SizeType, 0, ColorComponentCount>(
+                For_Constexpr< SizeType, 0, ColorComponentCount >(
                     [ thisColor, &m ]( auto i )
                     {
                         ( *thisColor )[ i ] *= m;
@@ -47,14 +45,36 @@ namespace RayTracer
                 return *thisColor;
             }
 
-            template <typename Lazy = ColorType>
-            inline typename std::enable_if<( ValueType_Is_FloatingPoint ), Lazy&>::type& operator/=( const ValueType& d )
+
+            template < typename Lazy = ColorType >
+            inline typename std::enable_if< (std::is_floating_point_v< typename Lazy::ValueType >), ColorType >::type operator*( const typename Lazy::ValueType& m ) const
             {
-                assert( d > std::numeric_limits<ValueType>::epsilon( ) );
+                ColorType        out;
+                const ColorType* thisColor = static_cast< const ColorType* >( this );
 
-                ColorType* thisColor = static_cast<ColorType*>( this );
+                For_Constexpr< SizeType, 0, ColorComponentCount >(
+                    [ thisColor, &out, &m ]( auto i )
+                    {
+                        out[ i ] = ( *thisColor )[ i ] * m;
+                    } );
 
-                For_Constexpr<SizeType, 0, ColorComponentCount>(
+                For_Constexpr< SizeType, ColorComponentCount, ColorType::DataArraySize >(
+                    [ thisColor, &out, &m ]( auto i )
+                    {
+                        out[ i ] = ( *thisColor )[ i ];
+                    } );
+
+                return out;
+            }
+
+            template < typename Lazy = ColorType >
+            inline typename std::enable_if< (std::is_floating_point_v< typename Lazy::ValueType >), Lazy& >::type operator/=( const typename Lazy::ValueType& d )
+            {
+                assert( d > std::numeric_limits< Lazy::ValueType >::epsilon( ) );
+
+                ColorType* thisColor = static_cast< ColorType* >( this );
+
+                For_Constexpr< SizeType, 0, ColorComponentCount >(
                     [ thisColor, &d ]( auto i )
                     {
                         ( *thisColor )[ i ] /= d;
@@ -63,108 +83,104 @@ namespace RayTracer
                 return *thisColor;
             }
 
-            template <typename Lazy = ColorType>
-            inline typename std::enable_if<( ValueType_Is_FloatingPoint ), Lazy&>::type& operator*=( const ColorType& other )
+            template < typename Lazy = ColorType >
+            inline typename std::enable_if< (std::is_floating_point_v< typename Lazy::ValueType >), Lazy& >::type operator*=( const ChromaInterface& other )
             {
 
+                ColorType*       thisColor  = static_cast< ColorType* >( this );
+                const ColorType* otherColor = static_cast< const ColorType* >( &other );
+
 #ifndef NDEBUG
-                For_Constexpr<SizeType, 0, ColorComponentCount>(
-                    [ &other ]( auto i )
+                For_Constexpr< SizeType, 0, ColorComponentCount >(
+                    [ otherColor ]( auto i )
                     {
-                        assert( other[ i ] >= 0 );
+                        assert( ( *otherColor )[ i ] >= 0 );
                     } );
 #endif
 
-                ColorType* thisColor = static_cast<ColorType*>( this );
 
-                For_Constexpr<SizeType, 0, ColorComponentCount>(
-                    [ thisColor, &other ]( auto i )
+                For_Constexpr< SizeType, 0, ColorComponentCount >(
+                    [ thisColor, otherColor ]( auto i )
                     {
-                        ( *thisColor )[ i ] *= other[ i ];
+                        ( *thisColor )[ i ] *= ( *otherColor )[ i ];
                     } );
 
                 return *thisColor;
             }
+
+            template < typename Lazy = ColorType >
+            inline typename std::enable_if< (std::is_floating_point_v< typename Lazy::ValueType >), Lazy >::type operator*( ColorType other )
+            {
+                return other *= *static_cast< ColorType* >( this );
+            }
     };
 
 
-    template <class ValueType, class ColorType>
-    class __declspec( empty_bases ) MonochromaticInterface : //
-                                   public ChromaInterface<ValueType, 1, ColorType>
-    {
-    };
-
-    template <class ValueType, class ColorType>
-    class __declspec( empty_bases ) TrichromaticInterface : //
-                                  public ChromaInterface<ValueType, 3, ColorType>
-    {
-    };
-
-    template <class ValueType, class ColorType>
+    template < class ColorType >
     class RgbInterface
     {
         public:
 
-            const ValueType& r( ) const
+            const auto& r( ) const
             {
-                return ( *static_cast<const ColorType*>( this ) )[ 0 ];
+                return ( *static_cast< const ColorType* >( this ) )[ 0 ];
             }
 
-            ValueType& r( )
+            auto& r( )
             {
-                return ( *static_cast<ColorType*>( this ) )[ 0 ];
+                return ( *static_cast< ColorType* >( this ) )[ 0 ];
             }
 
-            const ValueType& g( ) const
+            const auto& g( ) const
             {
-                return ( *static_cast<const ColorType*>( this ) )[ 1 ];
+                return ( *static_cast< const ColorType* >( this ) )[ 1 ];
             }
 
-            ValueType& g( )
+            auto& g( )
             {
-                return ( *static_cast<ColorType*>( this ) )[ 1 ];
+                return ( *static_cast< ColorType* >( this ) )[ 1 ];
             }
 
-            const ValueType& b( ) const
+            const auto& b( ) const
             {
-                return ( *static_cast<const ColorType*>( this ) )[ 2 ];
+                return ( *static_cast< const ColorType* >( this ) )[ 2 ];
             }
 
-            ValueType& b( )
+            auto& b( )
             {
-                return ( *static_cast<ColorType*>( this ) )[ 2 ];
+                return ( *static_cast< ColorType* >( this ) )[ 2 ];
             }
     };
 
-    template <class ValueType, class ColorType>
+    template < class ColorType >
     class AlphaInterface
     {
         public:
 
-            const ValueType& a( ) const
+            const auto& a( ) const
             {
-                return ( *static_cast<ColorType*>( this ) )[ 3 ];
+                return ( *static_cast< ColorType* >( this ) )[ 3 ];
             }
 
-            ValueType& a( )
+            auto& a( )
             {
-                return ( *static_cast<ColorType*>( this ) )[ 3 ];
+                return ( *static_cast< ColorType* >( this ) )[ 3 ];
             }
     };
 
 
-    template <typename ValueType, SizeType ColorComponentCount, SizeType ArraySize, class ColorType, class FlatColorType>
+    template < class ColorType, class flatColorType >
     class FlatChromaInterface
     {
         public:
 
-            using flatColorType = FlatColorType;
+            using FlatColorType = flatColorType;
 
-            inline FlatColorType& operator+=( const ColorType& c )
+            inline FlatChromaInterface& operator+=( const ColorType& c )
             {
-                FlatColorType* thisColor = static_cast<FlatColorType*>( this );
+                FlatColorType* thisColor = static_cast< FlatColorType* >( this );
 
-                For_Constexpr<SizeType, 0, ColorComponentCount>(
+                For_Constexpr< SizeType, 0, ColorType::ColorComponentCount >(
                     [ thisColor, &c ]( auto i )
                     {
                         ( *thisColor )[ i ] += c[ i ];
@@ -173,32 +189,37 @@ namespace RayTracer
                 //
                 this->weight( )++;
 
-                return *thisColor;
+                return *this;
             }
 
-            inline FlatColorType& operator+=( const FlatColorType& fc )
+            inline FlatColorType& operator+=( const FlatColorType& other )
             {
-                FlatColorType* thisColor = static_cast<FlatColorType*>( this );
+                FlatColorType* thisColor = static_cast< FlatColorType* >( this );
 
-                For_Constexpr<SizeType, 0, ColorComponentCount>(
-                    [ thisColor, &fc ]( auto i )
+                For_Constexpr< SizeType, 0, ColorType::ColorComponentCount >(
+                    [ thisColor, &other ]( auto i )
                     {
-                        ( *thisColor )[ i ] += fc[ i ];
+                        ( *thisColor )[ i ] += ( other )[ i ];
                     } );
 
                 //
-                this->weight( ) += fc.weight( );
+                this->weight( ) += other.weight( );
 
                 return *thisColor;
+            }
+
+            inline typename std::enable_if< (std::is_floating_point_v< typename ColorType::ValueType >), FlatColorType >::type operator+( FlatColorType other )
+            {
+                return other += *static_cast< FlatColorType* >( this );
             }
 
             inline ColorType GetUnitized( )
             {
                 ColorType      c;
 
-                FlatColorType* thisColor = static_cast<FlatColorType*>( this );
+                FlatColorType* thisColor = static_cast< FlatColorType* >( this );
 
-                For_Constexpr<SizeType, 0, ColorComponentCount>(
+                For_Constexpr< SizeType, 0, ColorType::ColorComponentCount >(
                     [ this, thisColor, &c ]( auto i )
                     {
                         c[ i ] = ( *thisColor )[ i ] / this->weight( );
@@ -207,115 +228,100 @@ namespace RayTracer
                 return c;
             }
 
-            inline const ValueType& weight( ) const
+            inline const auto& weight( ) const
             {
-                return ( *static_cast<const FlatColorType*>( this ) )[ ArraySize - 1 ];
+                return ( *static_cast< const FlatColorType* >( this ) )[ FlatColorType::DataArraySize - 1 ];
             }
 
-            inline ValueType& weight( )
+            inline auto& weight( )
             {
-                return ( *static_cast<FlatColorType*>( this ) )[ ArraySize - 1 ];
+                return ( *static_cast< FlatColorType* >( this ) )[ FlatColorType::DataArraySize - 1 ];
             }
     };
 
-    template <SizeType ArraySize, class ValueType, class ColorType, class FlatColorType>
+    template < class ValueType, class ColorType >
+    class __declspec( empty_bases ) MonochromaticInterface : //
+                                                             public ChromaInterface< ColorType, 1 >
+    {
+    };
+
+    template < class ColorType >
+    class __declspec( empty_bases ) TrichromaticInterface : //
+                                                            public ChromaInterface< ColorType, 3 >
+    {
+    };
+
+    template < class ColorType, class FlatColorType >
     class __declspec( empty_bases ) FlatTrichromaticInterface : //
-                                      public FlatChromaInterface<ValueType, 3, ArraySize, ColorType, FlatColorType>
+                                                                public FlatChromaInterface< ColorType, FlatColorType >
     {
     };
 
 
-    template <typename ValueType>
-    class __declspec( empty_bases ) Rgb :                                                       //
-                                          public ColorDataBuffer<ValueType, 3, Rgb<ValueType>>, //
-                                          public RgbInterface<ValueType, Rgb<ValueType>>,       //
-                                          public TrichromaticInterface<ValueType, Rgb<ValueType>>
+    template < typename ValueType >
+    class __declspec( empty_bases ) Rgb :                                                           //
+                                          public ColorDataBuffer< ValueType, 3, Rgb< ValueType > >, //
+                                          public RgbInterface< Rgb< ValueType > >,                  //
+                                          public TrichromaticInterface< Rgb< ValueType > >
 
 
     {
-        public:
-
-            using ChromaInterface = TrichromaticInterface<ValueType, Rgb<ValueType>>;
     };
 
-    template <typename ValueType>
-    class __declspec( empty_bases ) FlatRgb :                                                              //
-                                              public ColorDataBuffer<ValueType, 4, FlatRgb<ValueType>>,    //
-                                              public RgbInterface<ValueType, FlatRgb<ValueType>>,          //
-                                              public TrichromaticInterface<ValueType, FlatRgb<ValueType>>, //
-                                              public FlatTrichromaticInterface<4, ValueType, Rgb<ValueType>, FlatRgb<ValueType>>
+    template < typename ValueType >
+    class __declspec( empty_bases ) FlatRgb :                                                               //
+                                              public ColorDataBuffer< ValueType, 4, FlatRgb< ValueType > >, //
+                                              public RgbInterface< FlatRgb< ValueType > >,                  //
+                                              public TrichromaticInterface< FlatRgb< ValueType > >,         //
+                                              public FlatTrichromaticInterface< Rgb< ValueType >, FlatRgb< ValueType > >
     {
     };
 
-    template <typename ValueType>
-    class __declspec( empty_bases ) Rgba : //
-                                           public ColorDataBuffer<ValueType, 4, Rgba<ValueType>>,
-                                           public RgbInterface<ValueType, Rgba<ValueType>>,
-                                           public AlphaInterface<ValueType, Rgba<ValueType>>,
-                                           public TrichromaticInterface<ValueType, Rgba<ValueType>>
+    template < typename ValueType >
+    class __declspec( empty_bases ) Rgba :                                                            //
+                                           public ColorDataBuffer< ValueType, 4, Rgba< ValueType > >, //
+                                           public RgbInterface< Rgba< ValueType > >,                  //
+                                           public AlphaInterface< Rgba< ValueType > >,                //
+                                           public TrichromaticInterface< Rgba< ValueType > >
     {
     };
 
-    template <typename ValueType>
-    class __declspec( empty_bases ) FlatRgba :                                                            //
-                                               public ColorDataBuffer<ValueType, 5, FlatRgba<ValueType>>, //
-                                               public RgbInterface<ValueType, FlatRgba<ValueType>>,       //
-                                               public TrichromaticInterface<ValueType, Rgba<ValueType>>,  //
-                                               public FlatTrichromaticInterface<5, ValueType, Rgba<ValueType>, FlatRgba<ValueType>>
+    template < typename ValueType >
+    class __declspec( empty_bases ) FlatRgba :                                                                //
+                                               public ColorDataBuffer< ValueType, 5, FlatRgba< ValueType > >, //
+                                               public RgbInterface< FlatRgba< ValueType > >,                  //
+                                               public TrichromaticInterface< Rgba< ValueType > >,             //
+                                               public FlatTrichromaticInterface< Rgba< ValueType >, FlatRgba< ValueType > >
     {
     };
 
 
-    template <typename ValueType, SizeType DataArraySize, class ColorType>
-    inline auto operator*( ColorDataBuffer<ValueType, DataArraySize, ColorType> a, const ColorDataBuffer<ValueType, DataArraySize, ColorType>& b )
+    template < typename ColorType, SizeType ColorComponentCount >
+    inline ColorType operator*( const typename ColorType::ValueType& s, const ChromaInterface< ColorType, ColorComponentCount >& c )
     {
-        return ( *static_cast<ColorType*>( &a ) ) *= ( *static_cast<const ColorType*>( &b ) );
+        return c * s;
     }
 
-    template <typename ValueType, SizeType DataArraySize, class ColorType>
-    inline auto operator*( ColorDataBuffer<ValueType, DataArraySize, ColorType> c, const ValueType& s )
-    {
-        return ( *static_cast<ColorType*>( &c ) ) *= s;
-    }
 
-    template <template <typename> class ColorType, typename ValueType>
-    inline ColorType<ValueType> operator*( const ValueType& s, ColorType<ValueType> color )
-    {
-        return color *= s;
-    }
+    extern template class Rgb< uint8_t >;
+    extern template class Rgb< float >;
+    extern template class Rgb< double >;
 
-  /*  template <typename ValueType, SizeType ColorComponentCount, SizeType ArraySize, class ColorType, class FlatColorType>
-    inline FlatRgb<ValueType> operator+( FlatChromaInterface<ValueType, ColorComponentCount, ArraySize, ColorType, FlatColorType>        a,
-                                         const FlatChromaInterface<ValueType, ColorComponentCount, ArraySize, ColorType, FlatColorType>& b )
-    {
-        return ( *static_cast<FlatColorType*>( &a ) ) += ( *static_cast<const FlatColorType*>( &b ) );
-    }*/
-
-    template <typename ValueType>
-    FlatRgb<ValueType> operator+( FlatRgb<ValueType> a, const FlatRgb<ValueType>& b )
-    {
-        return a += b;
-    }
-
-    extern template class Rgb<uint8_t>;
-    extern template class Rgb<float>;
-    extern template class Rgb<double>;
-
-    using Rgb8     = Rgb<uint8_t>;
-    using RgbF     = Rgb<float>;
-    using RgbD     = Rgb<double>;
-    using FlatRgbD = FlatRgb<double>;
+    using Rgb8     = Rgb< uint8_t >;
+    using RgbF     = Rgb< float >;
+    using RgbD     = Rgb< double >;
+    using FlatRgbD = FlatRgb< double >;
 
     Rgb8 ConvertToRgb8( const RgbD& color );
     RgbD LinearToGamma( const RgbD& color, double gamma = 2.2 );
 
-    extern template class Rgba<uint8_t>;
-    extern template class Rgba<float>;
-    extern template class Rgba<double>;
+    extern template class Rgba< uint8_t >;
+    extern template class Rgba< float >;
+    extern template class Rgba< double >;
 
-    using Rgba8 = Rgba<uint8_t>;
-    using RgbaF = Rgba<float>;
-    using RgbaD = Rgba<double>;
+    using Rgba8 = Rgba< uint8_t >;
+    using RgbaF = Rgba< float >;
+    using RgbaD = Rgba< double >;
 
     Rgba8 ConvertToRgba8( const RgbD& color );
 

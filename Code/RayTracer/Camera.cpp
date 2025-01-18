@@ -54,22 +54,25 @@ namespace RayTracer
 
         double summationDivisor = double( samplesPerPixel );
 
-#pragma omp parallel for
-        for ( int j = 0; j < renderBuffer.GetHeight( ); j++ )
+#pragma omp parallel
         {
-            auto imageRow = renderBuffer.GetRowSpan( j );
-
-            for ( int i = 0; i < renderBuffer.GetWidth( ); i++ )
+#pragma omp for
+            for ( int j = 0; j < renderBuffer.GetHeight( ); j++ )
             {
-                FlatRgbD pixelColor { 0, 0, 0, 0 };
+                auto imageRow = renderBuffer.GetRowSpan( j );
 
-                while ( pixelColor.weight( ) < samplesPerPixel )
+                for ( int i = 0; i < renderBuffer.GetWidth( ); i++ )
                 {
-                    RayD ray    = CreateRandomRayAt( i, j );
-                    pixelColor += RayColor( ray, maxBounces, world );
-                }
+                    FlatRgbD pixelColor { 0, 0, 0, 0 };
 
-                imageRow[ i ] = ConvertToRgba8( LinearToGamma( pixelColor.GetUnitized( ) ) );
+                    while ( pixelColor.weight( ) < samplesPerPixel )
+                    {
+                        RayD ray    = CreateRandomRayAt( i, j );
+                        pixelColor += RayColor( ray, maxBounces, world );
+                    }
+
+                    imageRow[ i ] = ConvertToRgba8( LinearToGamma( pixelColor.GetUnitized( ) ) );
+                }
             }
         }
     }
@@ -97,7 +100,7 @@ namespace RayTracer
 
         auto a = 0.5 * ( Normalize( ray.GetDirection( ) ).y( ) + 1.0 );
 
-        return ( ( 1.0 - a ) * FlatRgbD { 1.0, 1.0, 1.0, 0.0 } + a * FlatRgbD { 0.5, 0.7, 1.0, 1.0 } ).GetUnitized( );
+        return ( (( 1.0 - a ) * FlatRgbD { 1.0, 1.0, 1.0, 0.0 }) + a * FlatRgbD { 0.5, 0.7, 1.0, 1.0 } ).GetUnitized( );
     }
 
     void Camera::SetLookAt( const Point3d& p )
