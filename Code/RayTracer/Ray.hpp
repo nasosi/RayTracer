@@ -46,4 +46,6 @@ namespace RayTracer
     using RayF = Ray<float>;
     using RayD = Ray<double>;
 
+    using RayType = Ray<RealType>;
+
 } // namespace RayTracer

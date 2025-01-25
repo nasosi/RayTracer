@@ -1,22 +1,22 @@
 #pragma once
 
 #include "Color.hpp"
-#include "Hittable.hpp"
+//#include "Hittable.hpp"
 #include "Ray.hpp"
 
 namespace RayTracer
 {
 
+    class HitRecord;
+
     class Material
     {
         public:
 
+
             virtual ~Material( ) = default;
 
-            virtual bool Scatter( const RayD& incomingRay, const HitRecord& rec, RgbD& attenuation, RayD& scatteredRay ) const
-            {
-                return false;
-            }
+            virtual bool Scatter( const RayType& incomingRay, const HitRecord& hitRecord, RgbColor& attenuation, RayType& scatteredRay ) const;
     };
 
 
@@ -24,14 +24,14 @@ namespace RayTracer
     {
         private:
 
-            RgbD albedo;
+            RgbColor albedo;
 
 
         public:
 
-            Lambertian( const RgbD& albedo );
+            Lambertian( const RgbColor& albedo );
 
-            bool Scatter( const RayD& incomingRay, const HitRecord& hitRecord, RgbD& attenuation, RayD& scatteredRay ) const override;
+            bool Scatter( const RayType& incomingRay, const HitRecord& hitRecord, RgbColor& attenuation, RayType& scatteredRay ) const override;
     };
 
 
@@ -39,13 +39,13 @@ namespace RayTracer
     {
         public:
 
-            Metal( const RgbD& albedo );
+            Metal( const RgbColor& albedo );
 
-            bool Scatter( const RayD& incomingRay, const HitRecord& hitRecord, RgbD& attenuation, RayD& scatteredRay ) const override;
+            bool Scatter( const RayType& incomingRay, const HitRecord& hitRecord, RgbColor& attenuation, RayType& scatteredRay ) const override;
 
         private:
 
-            RgbD albedo;
+            RgbColor albedo;
     };
 
 } // namespace RayTracer

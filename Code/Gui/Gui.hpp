@@ -5,39 +5,49 @@
 #include "Common.hpp"
 #include "Hittable.hpp"
 #include "Image.hpp"
+#include "ThreadPool.hpp"
+#include "TriangleMesh.hpp"
 
 namespace RayTracer
 {
 
     class Application
     {
-            SizeType     maxBounces      = 10;
-            SizeType     samplesPerPixel = 1;
+            ThreadPool       threadPool;
 
-            HittableList world;
+            SizeType         maxBounces      = 10;
+            SizeType         samplesPerPixel = 1;
 
-            Camera       camera;
+            HittableList     world;
 
-            bool         rotate = false;
-            Point2f      rotateStart;
+            Camera           camera;
 
-            bool         moveBack                 = false;
-            bool         moveForward              = false;
-            bool         moveLeft                 = false;
-            bool         moveRight                = false;
+            bool             rotate = false;
+            Point2f          rotateStart;
 
-            double       minMoveVelocityPerSec    = 0.5;
-            double       moveVelocityPerSec       = minMoveVelocityPerSec;
-            double       moveAccelerationPerSecSq = 4.0;
+            bool             moveBack                 = false;
+            bool             moveForward              = false;
+            bool             moveLeft                 = false;
+            bool             moveRight                = false;
 
+            RealType         minMoveVelocityPerSec    = 0.5;
+            RealType         moveVelocityPerSec       = minMoveVelocityPerSec;
+            RealType         moveAccelerationPerSecSq = 4.0;
+
+            Array< TriangleMesh, 2 > triangleMeshList;
+
+            TriangleMesh*            renderingTriangleMesh;
+            TriangleMesh*            sortingTriangleMesh;
+            std::mutex               swapMutex;
+            std::atomic_bool sorting = false;
 
         public:
 
             Application( );
 
             void         InitGui( int& windowWidth, int& windowHeight );
-            void         InitRenderBuffer( ImageView<Rgba8>& renderBuffer );
-            bool         Iterate( const double& timeSec, ImageView<Rgba8>& renderBuffer );
+            void         InitRenderBuffer( ImageView< Rgba8 >& renderBuffer );
+            bool         Iterate( const float& timeSec, ImageView< Rgba8 >& renderBuffer );
 
 
             Point2f      GetMousePosition( ) const;
@@ -52,6 +62,8 @@ namespace RayTracer
             virtual void HandleLeftMouseButtonUnclickEvent( float x, float y );
             virtual void HandleRightMouseButtonUnclickEvent( float x, float y );
             virtual void HandleBothMouseButtonsUnclickedEvent( float x, float y );
+
+            void         LoadObj( const char* fileName );
     };
 
 

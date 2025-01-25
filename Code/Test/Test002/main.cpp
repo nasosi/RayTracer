@@ -8,17 +8,17 @@ using namespace RayTracer;
 
 HittableList CreateWorld( )
 {
-    auto groundMaterial       = std::make_shared<Lambertian>( RgbD { 0.8, 0.8, 0.0 } );
-    auto centerSphereMaterial = std::make_shared<Lambertian>( RgbD { 0.1, 0.2, 0.5 } );
-    auto leftSphereMaterial   = std::make_shared<Metal>( RgbD { 0.8, 0.8, 0.8 } );
-    auto rightSphereMaterial  = std::make_shared<Metal>( RgbD { 0.8, 0.6, 0.2 } );
+    auto groundMaterial       = Lambertian( RgbColor { 0.8f, 0.8f, 0.0f } );
+    auto centerSphereMaterial = Lambertian( RgbColor { 0.1f, 0.2f, 0.5f } );
+    auto leftSphereMaterial   = Metal( RgbColor { 0.8f, 0.8f, 0.8f } );
+    auto rightSphereMaterial  = Metal( RgbColor { 0.8f, 0.6f, 0.2f } );
 
     //
     HittableList world;
-    world.objects.push_back( std::make_shared<Sphere>( Point3d{ 0.0, -100.5, -1.0 }, 100.0, groundMaterial ) );
-    world.objects.push_back( std::make_shared<Sphere>( Point3d{ 0.0, 0, -1.2 }, 0.5, centerSphereMaterial ) );
-    world.objects.push_back( std::make_shared<Sphere>( Point3d { -1.0, 0.0, -1.0 }, 0.5, leftSphereMaterial ) );
-    world.objects.push_back( std::make_shared<Sphere>( Point3d{ 1.0, 0.0, -1.0 }, 0.5, rightSphereMaterial ) );
+    world.objects.push_back( Sphere( Point3{ 0.0, -100.5, -1.0 }, 100.0, groundMaterial ) );
+    world.objects.push_back( Sphere( Point3{ 0.0, 0, -1.2 }, 0.5, centerSphereMaterial ) );
+    world.objects.push_back( Sphere( Point3 { -1.0, 0.0, -1.0 }, 0.5, leftSphereMaterial ) );
+    world.objects.push_back( Sphere( Point3{ 1.0, 0.0, -1.0 }, 0.5, rightSphereMaterial ) );
 
     return world;
 }
@@ -38,9 +38,10 @@ int main( )
 
     HittableList       world        = CreateWorld( );
 
+    TriangleMesh       triangleMesh;
     //
     Camera camera( cameraFocalLength, cameraVerticalFieldOfViewDeg );
-    camera.Render( world, renderBuffer, maxBounces, samplesPerPixel );
+    camera.Render( world, triangleMesh, renderBuffer, maxBounces, samplesPerPixel );
 
     WritePPM( renderBuffer, "image.ppm" );
 }

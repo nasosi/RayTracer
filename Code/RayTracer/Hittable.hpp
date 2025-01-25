@@ -2,6 +2,7 @@
 
 #include "Common.hpp"
 #include "Interval.hpp"
+#include "Material.hpp"
 #include "Ray.hpp"
 
 #include <vector>
@@ -9,17 +10,16 @@
 
 namespace RayTracer
 {
-    class Material;
 
     struct HitRecord
     {
-            Point3d                 point;
-            Vec3d                   surfaceNormal;
-            double                  t;
-            bool                    frontFace;
-            SharedPointer<Material> material;
+            Point3   point;
+            Vec3     surfaceNormal;
+            double   t;
+            bool     frontFace;
+            Material material;
 
-            void                    SetSurfaceNormal( const RayD& ray, const Vec3d& surfaceOutwardNormal )
+            void     SetSurfaceNormal( const RayType& ray, const Vec3& surfaceOutwardNormal )
             {
                 this->frontFace     = Dot( ray.GetDirection( ), surfaceOutwardNormal );
                 this->surfaceNormal = this->frontFace ? surfaceOutwardNormal : -surfaceOutwardNormal;
@@ -34,18 +34,10 @@ namespace RayTracer
             virtual ~Hittable( ) = default;
 
             //
-            virtual bool Hit( const RayD& ray, const IntervalD& rayParameterInterval, HitRecord& hitRecord ) const = 0;
-    };
-
-    class HittableList : public Hittable
-    {
-        public:
-
-            std::vector<SharedPointer<Hittable>> objects;
-
-            //
-
-            bool Hit( const RayD& ray, const IntervalD& rayParameterInterval, HitRecord& hitRecord ) const override;
+            virtual bool Hit( const RayType& ray, const IntervalD& rayParameterInterval, HitRecord& hitRecord ) const
+            {
+                return false;
+            };
     };
 
 
@@ -53,14 +45,26 @@ namespace RayTracer
     {
         private:
 
-            Point3d                 center;
-            double                  radius;
-            SharedPointer<Material> material;
+            Point3   center;
+            RealType radius;
+            Material material;
 
         public:
 
-            Sphere( const Point3d& center, double radius, SharedPointer<Material> material );
+            Sphere( const Point3& center, double radius, Material material );
 
-            bool Hit( const RayD& ray, const IntervalD& rayParameterInterval, HitRecord& hitRecord ) const override;
+            bool Hit( const RayType& ray, const IntervalD& rayParameterInterval, HitRecord& hitRecord ) const override;
     };
+
+    class HittableList : public Hittable
+    {
+        public:
+
+            std::vector< Sphere > objects;
+
+            //
+
+            bool Hit( const RayType& ray, const IntervalD& rayParameterInterval, HitRecord& hitRecord ) const override;
+    };
+
 } // namespace RayTracer

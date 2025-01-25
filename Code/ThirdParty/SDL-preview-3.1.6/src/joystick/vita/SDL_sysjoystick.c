@@ -81,12 +81,12 @@ static SDL_INLINE void lerp(SDL_Point *dest, const SDL_Point *first, const SDL_P
 // evaluate a point on a bezier-curve. t goes from 0 to 1.0
 static int calc_bezier_y(float t)
 {
-    SDL_Point ab, bc, cd, abbc, bccd, dest;
+    SDL_Point ab, aabb, cd, abbc, bccd, dest;
     lerp(&ab, &a, &b, t);         // point between a and b
-    lerp(&bc, &b, &c, t);         // point between b and c
+    lerp(&aabb, &b, &c, t);         // point between b and c
     lerp(&cd, &c, &d, t);         // point between c and d
-    lerp(&abbc, &ab, &bc, t);     // point between ab and bc
-    lerp(&bccd, &bc, &cd, t);     // point between bc and cd
+    lerp(&abbc, &ab, &aabb, t);     // point between ab and bc
+    lerp(&bccd, &aabb, &cd, t);     // point between bc and cd
     lerp(&dest, &abbc, &bccd, t); // point on the bezier-curve
     return dest.y;
 }

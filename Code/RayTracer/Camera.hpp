@@ -4,6 +4,8 @@
 #include "Hittable.hpp"
 #include "Image.hpp"
 #include "Ray.hpp"
+#include "TriangleMesh.hpp"
+
 
 #include <iostream>
 #include <limits>
@@ -16,39 +18,46 @@ namespace RayTracer
     {
         private:
 
-            double  focalLength;
-            double  verticalFieldOfViewInDegrees;
+            RealType focalLength;
+            RealType verticalFieldOfViewInDegrees;
 
-            Point3d center;
-            Point3d lookAt;
-            Vec3d   upVector;
-            Point3d topLeftPixelLocation;
+            Point3   center;
+            Point3   lookAt;
+            Vec3     upVector;
+            Point3   topLeftPixelLocation;
 
-            Vec3d   pixelDeltaU;
-            Vec3d   pixelDeltaV;
+            Vec3     pixelDeltaU;
+            Vec3     pixelDeltaV;
 
-            void    CalculateViewportParameters( double windowWidth, double windowHeight );
+            void     CalculateViewportParameters( double windowWidth, double windowHeight );
 
         public:
 
             Camera( const double& focalLength, const double& verticalFieldOfViewInDegrees );
 
-            RayD           CreateRandomRayAt( const SizeType& i, const SizeType& j );
+            RayType              CreateRayAt( const SizeType& i, const SizeType& j );
+            RayType              CreateRandomRayAt( const SizeType& i, const SizeType& j );
 
-            void           Render( const Hittable& world, RgbaImageView8& renderBuffer, SizeType maxBounces = 10, SizeType samplesPerPixel = 10 );
+            void                 Render( const Hittable& world, const TriangleMesh& triangleMesh, RgbaImageView8& renderBuffer, SizeType maxBounces = 10, SizeType samplesPerPixel = 10 );
 
-            RgbD           RayColor( const RayD& ray, SizeType maxBounces, const Hittable& world ) const;
+            RgbColor             RayColor( const RayType& ray, SizeType maxBounces, const Hittable& world ) const;
 
-            const Point3d& GetLookAt( ) const
+            inline const Point3& GetLookAt( ) const
             {
                 return lookAt;
             }
 
-            void SetLookAt( const Point3d& p );
+            inline const Point3& GetCenter( ) const
+            {
+                return center;
+            }
 
-            void Rotate( Vec<double, 2> rotationAnglesDeg );
 
-            void Pan( Vec<double, 2> panVector );
+            void SetLookAt( const Point3& p );
+
+            void Rotate( Vec< RealType, 2 > rotationAnglesDeg );
+
+            void Pan( Vec< RealType, 2 > panVector );
     };
 
 

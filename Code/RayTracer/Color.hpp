@@ -7,6 +7,7 @@
 #include <cassert>
 #include <cstdint>
 #include <type_traits>
+#include <cmath>
 
 namespace RayTracer
 {
@@ -310,19 +311,39 @@ namespace RayTracer
     using Rgb8     = Rgb< uint8_t >;
     using RgbF     = Rgb< float >;
     using RgbD     = Rgb< double >;
+    using FlatRgbF = FlatRgb< float >;
     using FlatRgbD = FlatRgb< double >;
 
-    Rgb8 ConvertToRgb8( const RgbD& color );
-    RgbD LinearToGamma( const RgbD& color, double gamma = 2.2 );
+    using Rgba8    = Rgba< uint8_t >;
+    using RgbaF    = Rgba< float >;
+    using RgbaD    = Rgba< double >;
+
+    template < class T >
+    Rgb8 ConvertToRgb8( const Rgb< T >& color )
+    {
+        return Rgb8 { FloatingToByte( color.r( ) ), FloatingToByte( color.g( ) ), FloatingToByte( color.b( ) ) };
+    }
+
+    template < class T >
+    Rgba8 ConvertToRgba8( const Rgb< T >& color )
+    {
+        return Rgba8 { FloatingToByte( color.r( ) ), FloatingToByte( color.g( ) ), FloatingToByte( color.b( ) ), 255 };
+    }
+
+    template < class T >
+    Rgb< T > LinearToGamma( const Rgb< T >& color, T gamma = 2.2 )
+    {
+        T oneOverGamma = T( 1.0 ) / gamma;
+
+        return Rgb< T > { std::pow( color.r( ), oneOverGamma ), std::pow( color.g( ), oneOverGamma ), std::pow( color.b( ), oneOverGamma ) };
+    }
 
     extern template class Rgba< uint8_t >;
     extern template class Rgba< float >;
     extern template class Rgba< double >;
 
-    using Rgba8 = Rgba< uint8_t >;
-    using RgbaF = Rgba< float >;
-    using RgbaD = Rgba< double >;
+    using RgbColor     = Rgb< RealType >;
+    using FlatRgbColor = FlatRgb< RealType >;
 
-    Rgba8 ConvertToRgba8( const RgbD& color );
 
 } // namespace RayTracer

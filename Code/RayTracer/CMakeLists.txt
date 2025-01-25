@@ -11,10 +11,16 @@ set( RtHeaderFiles
 	Image.hpp
 	Interval.hpp
 	Material.hpp
+	Octree.hpp
 	Ray.hpp
+	ThreadPool.hpp
+	Triangle.hpp
+	TriangleMesh.hpp
+
 )
 
 set( RtSourceFiles 
+Aabb.cpp
 	Algebra.cpp
 	Array.cpp
 	Camera.cpp
@@ -24,16 +30,20 @@ set( RtSourceFiles
 	Image.cpp
 	Interval.cpp
 	Material.cpp
+	Octree.cpp
 	Ray.cpp
-
+	ThreadPool.cpp
+	Triangle.cpp
+	TriangleMesh.cpp
 )
 
-add_library( RayTracer STATIC ${RtSourceFiles} ${RtHeaderFiles} )
+add_library( RayTracer STATIC ${RtSourceFiles} ${RtHeaderFiles}  )
 add_library( RayTracer::RayTracer ALIAS RayTracer )
 
 target_include_directories(RayTracer PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 
-target_link_libraries(RayTracer PUBLIC OpenMP::OpenMP_CXX)
+target_link_libraries( RayTracer PUBLIC OpenMP::OpenMP_CXX)
+target_link_libraries( RayTracer PRIVATE ObjLoader::ObjLoader )
 
 set_property(TARGET RayTracer PROPERTY CXX_STANDARD 20)
 

@@ -11,4 +11,8 @@ endif()
 
 project ("RayTracer" VERSION 0.1 LANGUAGES CXX)
 
+set( RayTracer_DataDir "${CMAKE_CURRENT_LIST_DIR}/Data" )
+
+message( AAA ${RayTracer_DataDir})
+
 add_subdirectory(Code)

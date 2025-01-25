@@ -3,14 +3,14 @@
 namespace RayTracer
 {
 
-    Sphere::Sphere( const Point3d& center, double radius, SharedPointer<Material> material ) : center( center ), radius( std::fmax( 0, radius ) ), material( material )
+    Sphere::Sphere( const Point3& center, double radius, Material material ) : center( center ), radius( std::fmax( 0, radius ) ), material( material )
     {
     }
 
-    bool Sphere::Hit( const RayD& ray, const IntervalD& rayParameterInterval, HitRecord& hitRecord ) const
+    bool Sphere::Hit( const RayType& ray, const IntervalD& rayParameterInterval, HitRecord& hitRecord ) const
     {
 
-        Vec3d oc           = this->center - ray.GetOrigin( );
+        Vec3 oc           = this->center - ray.GetOrigin( );
         auto  a            = ray.GetDirection( ).MagSquare( );
         auto  h            = Dot( ray.GetDirection( ), oc );
         auto  c            = oc.MagSquare( ) - radius * radius;
@@ -36,14 +36,14 @@ namespace RayTracer
 
         hitRecord.t                = root;
         hitRecord.point            = ray.GetPointAt( hitRecord.t );
-        Vec3d surfaceOutwardNormal = ( hitRecord.point - this->center ) / radius;
+        Vec3 surfaceOutwardNormal = ( hitRecord.point - this->center ) / radius;
         hitRecord.SetSurfaceNormal( ray, surfaceOutwardNormal );
         hitRecord.material = material;
 
         return true;
     }
 
-    bool HittableList::Hit( const RayD& ray, const IntervalD& rayParameterInterval, HitRecord& hitRecord ) const
+    bool HittableList::Hit( const RayType& ray, const IntervalD& rayParameterInterval, HitRecord& hitRecord ) const
     {
         HitRecord tempHitRecord;
         bool      hitSomething = false;
@@ -52,7 +52,7 @@ namespace RayTracer
 
         for ( const auto& object : objects )
         {
-            if ( object->Hit( ray, Interval( rayParameterInterval.GetFrom( ), closest ), tempHitRecord ) )
+            if ( object.Hit( ray, Interval( rayParameterInterval.GetFrom( ), closest ), tempHitRecord ) )
             {
                 hitSomething = true;
                 closest      = tempHitRecord.t;

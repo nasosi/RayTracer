@@ -1,3 +1,10 @@
+
+add_library( ObjLoader INTERFACE )
+add_library( ObjLoader::ObjLoader ALIAS ObjLoader )
+target_include_directories( ObjLoader INTERFACE "${CMAKE_CURRENT_LIST_DIR}/ThirdParty/Obj-Loader/Source" )
+
+
+
   if(CMAKE_BUILD_TYPE MATCHES "Release")
          set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /fp:fast")
    endif()

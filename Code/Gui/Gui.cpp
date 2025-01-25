@@ -14,20 +14,20 @@ namespace RayTracer
 
     HittableList CreateDemoWorld( )
     {
-        auto groundMaterial       = std::make_shared<Lambertian>( RgbD { 0.8, 0.8, 0.0 } );
-        auto centerSphereMaterial = std::make_shared<Lambertian>( RgbD { 0.1, 0.2, 0.5 } );
-        auto otherSphereMaterial  = std::make_shared<Lambertian>( RgbD { 0.5, 0.2, 0.1 } );
-        auto leftSphereMaterial   = std::make_shared<Metal>( RgbD { 0.8, 0.8, 0.8 } );
-        auto rightSphereMaterial  = std::make_shared<Metal>( RgbD { 0.8, 0.6, 0.2 } );
+        auto groundMaterial       = Lambertian( RgbColor { 0.8, 0.8, 0.0 } );
+        auto centerSphereMaterial = Lambertian( RgbColor { 0.1, 0.2, 0.5 } );
+        auto otherSphereMaterial  = Lambertian( RgbColor { 0.5, 0.2, 0.1 } );
+        auto leftSphereMaterial   = Metal( RgbColor { 0.8, 0.8, 0.8 } );
+        auto rightSphereMaterial  = Metal( RgbColor { 0.8, 0.6, 0.2 } );
 
         //
         HittableList world;
-        world.objects.push_back( std::make_shared<Sphere>( Point3d { 0.0, -100.5, -1.0 }, 100.0, groundMaterial ) );
-        world.objects.push_back( std::make_shared<Sphere>( Point3d { 0.0, 0, -1.2 }, 0.5, centerSphereMaterial ) );
-        world.objects.push_back( std::make_shared<Sphere>( Point3d { 0.0, 0, -4.5 }, 0.3, otherSphereMaterial ) );
+        world.objects.push_back( Sphere( Point3 { 0.0, -100.5, -1.0 }, 100.0, groundMaterial ) );
+        world.objects.push_back( Sphere( Point3 { 0.0, 0, -1.2 }, 0.5, centerSphereMaterial ) );
+        world.objects.push_back( Sphere( Point3 { 0.0, 0, -4.5 }, 0.3, otherSphereMaterial ) );
 
-        world.objects.push_back( std::make_shared<Sphere>( Point3d { -1.0, 0.0, -1.0 }, 0.5, leftSphereMaterial ) );
-        world.objects.push_back( std::make_shared<Sphere>( Point3d { 1.0, 0.0, -1.0 }, 0.5, rightSphereMaterial ) );
+        world.objects.push_back( Sphere( Point3 { -1.0, 0.0, -1.0 }, 0.5, leftSphereMaterial ) );
+        world.objects.push_back( Sphere( Point3 { 1.0, 0.0, -1.0 }, 0.5, rightSphereMaterial ) );
 
         return world;
     }
@@ -36,17 +36,17 @@ namespace RayTracer
     {
         private:
 
-            SDL_Window*      window         = nullptr;
-            SDL_Renderer*    renderer       = nullptr;
-            SDL_Surface*     renderSurface  = nullptr;
-            SDL_Texture*     surfaceTexture = nullptr;
+            SDL_Window*        window         = nullptr;
+            SDL_Renderer*      renderer       = nullptr;
+            SDL_Surface*       renderSurface  = nullptr;
+            SDL_Texture*       surfaceTexture = nullptr;
 
-            ImageView<Rgba8> renderBuffer;
+            ImageView< Rgba8 > renderBuffer;
 
-            int              windowWidth  = 0;
-            int              windowHeight = 0;
+            int                windowWidth  = 0;
+            int                windowHeight = 0;
 
-            Application*     application;
+            Application*       application;
 
         public:
 
@@ -94,7 +94,7 @@ namespace RayTracer
                 }
 
                 this->renderSurface = SDL_CreateSurface( this->windowWidth, this->windowHeight, SDL_PIXELFORMAT_RGBA32 );
-                this->renderBuffer  = ImageView<Rgba8>( static_cast<uint8_t*>( renderSurface->pixels ), renderSurface->w, renderSurface->h, renderSurface->pitch );
+                this->renderBuffer  = ImageView< Rgba8 >( static_cast< uint8_t* >( renderSurface->pixels ), renderSurface->w, renderSurface->h, renderSurface->pitch );
 
                 application->InitRenderBuffer( this->renderBuffer );
 
@@ -199,31 +199,33 @@ namespace RayTracer
     GuiManager guiManager;
 
 
-    Application::Application( ) : camera( 1.0, 68.0 )
+    Application::Application( ) : threadPool( 2 ), camera( 1.0, 68.0 )
     {
-        world = CreateDemoWorld( );
+        world                 = CreateDemoWorld( );
+
+        renderingTriangleMesh = &triangleMeshList[ 0 ];
+        sortingTriangleMesh   = &triangleMeshList[ 1 ];
     }
 
     void Application::InitGui( int& windowWidth, int& windowHeight )
     {
-        windowWidth  = 640;
-        windowHeight = 480;
+        windowWidth  = 1920;
+        windowHeight = 1020;
     }
 
-    void Application::InitRenderBuffer( ImageView<Rgba8>& /* renderBuffer */ )
+    void Application::InitRenderBuffer( ImageView< Rgba8 >& /* renderBuffer */ )
     {
     }
 
-    bool Application::Iterate( const double& timeSec, ImageView<Rgba8>& renderBuffer )
+    bool Application::Iterate( const float& timeSec, ImageView< Rgba8 >& renderBuffer )
     {
-        static double   prevFrameTimeSec  = 0;
-        static double   prevReportTimeSec = 0;
+        static float    prevFrameTimeSec  = 0;
+        static float    prevReportTimeSec = 0;
         static SizeType reportFrameCount  = 0;
 
-        
 
-        double          deltaTimeSec      = timeSec - prevFrameTimeSec;
-        double          reportDurationSec = timeSec - prevReportTimeSec;
+        float           deltaTimeSec      = timeSec - prevFrameTimeSec;
+        float           reportDurationSec = timeSec - prevReportTimeSec;
 
         if ( reportDurationSec >= 1.0 )
         {
@@ -238,12 +240,12 @@ namespace RayTracer
 
         if ( rotate )
         {
-            auto   mousePos = GetMousePosition( );
+            auto     mousePos = GetMousePosition( );
 
-            double deltaX   = mousePos.x( ) - rotateStart.x( );
-            double deltaY   = mousePos.y( ) - rotateStart.y( );
+            RealType deltaX   = mousePos.x( ) - rotateStart.x( );
+            RealType deltaY   = mousePos.y( ) - rotateStart.y( );
 
-            camera.Rotate( Vec<double, 2> { -10.0 * deltaX * deltaTimeSec, -10.0 * deltaY * deltaTimeSec } );
+            camera.Rotate( Vec< RealType, 2 > { -10.0f * deltaX * deltaTimeSec, -10.0f * deltaY * deltaTimeSec } );
 
             rotateStart = mousePos;
         }
@@ -252,25 +254,25 @@ namespace RayTracer
 
         if ( moveBack )
         {
-            camera.Pan( Vec<double, 2> { 0, moveVelocityPerSec * deltaTimeSec } );
+            camera.Pan( Vec< RealType, 2 > { 0, moveVelocityPerSec * deltaTimeSec } );
             moving = true;
         }
 
         if ( moveForward )
         {
-            camera.Pan( Vec<double, 2> { 0, -moveVelocityPerSec * deltaTimeSec } );
+            camera.Pan( Vec< RealType, 2 > { 0, -moveVelocityPerSec * deltaTimeSec } );
             moving = true;
         }
 
         if ( moveLeft )
         {
-            camera.Pan( Vec<double, 2> { -moveVelocityPerSec * deltaTimeSec, 0.0 } );
+            camera.Pan( Vec< RealType, 2 > { -moveVelocityPerSec * deltaTimeSec, 0.0 } );
             moving = true;
         }
 
         if ( moveRight )
         {
-            camera.Pan( Vec<double, 2> { moveVelocityPerSec * deltaTimeSec, 0.0 } );
+            camera.Pan( Vec< RealType, 2 > { moveVelocityPerSec * deltaTimeSec, 0.0 } );
             moving = true;
         }
 
@@ -283,8 +285,9 @@ namespace RayTracer
             moving             = true;
             moveVelocityPerSec = minMoveVelocityPerSec;
         }
-
-        camera.Render( world, renderBuffer, maxBounces, samplesPerPixel );
+        swapMutex.lock( );
+        camera.Render( world,*renderingTriangleMesh, renderBuffer, maxBounces, samplesPerPixel );
+        swapMutex.unlock( );
 
         prevFrameTimeSec = timeSec;
 
@@ -379,6 +382,32 @@ namespace RayTracer
     void Application::HandleBothMouseButtonsUnclickedEvent( float x, float y )
     {
         rotate = false;
+    }
+
+
+    void Application::LoadObj( const char* fileName )
+    {
+        sortingTriangleMesh->LoadObj( fileName );
+        sortingTriangleMesh->InitialSort( camera.GetCenter( ) );
+
+        renderingTriangleMesh = sortingTriangleMesh;
+
+        threadPool.Enqueue(
+            [ this ]
+            {
+                for ( ;; )
+                {
+                 //   std::cout << "Start Sort" << std::endl;
+                    sortingTriangleMesh->Sort( camera.GetCenter( ) );
+
+                    swapMutex.lock( );
+                    std::swap( sortingTriangleMesh, renderingTriangleMesh );
+                    swapMutex.unlock( );
+
+                    sortingTriangleMesh = renderingTriangleMesh;
+                   // std::cout << "End sort" << std::endl;
+                }
+            } );
     }
 
 } // namespace RayTracer
